@@ -19,6 +19,11 @@ export interface Announcement {
     body: string;
     footer?: string;
     date: string;
+    image: {
+      s3key: string;
+      s3Url: string;
+    };
+    file?: File;
   }
   
   export enum UserType {

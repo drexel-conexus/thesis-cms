@@ -4,6 +4,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '../constant/data';
 import UserForm from './UserForm';
 import EventForm from './EventForm';
+import { FaEdit, FaTrash } from 'react-icons/fa'; // Import icons
 
 interface EventsProps {
   events: Event[];
@@ -36,7 +37,20 @@ const Events: React.FC<EventsProps> = () => {
 
   const handleAddEvent = async (eventData: Omit<Event, '_id'>) => {
     try {
-      const response = await axios.post<Event>(`${API_BASE_URL}/events`, eventData);
+      let image = eventData.image;
+      console.log(eventData.file);
+      if (eventData.file) {
+        const formData = new FormData();
+        formData.append('image', eventData.file);
+        const res = await axios.post(`${API_BASE_URL}/upload`, formData);
+        if (res) {
+          image = {
+            s3key: res.data.s3key,
+          s3Url: res.data.s3Url,
+          }
+        }
+      }
+      const response = await axios.post<Event>(`${API_BASE_URL}/events`, {...eventData, image});
       setEvents([...events, response.data]);
     } catch (error) {
       console.error('Error adding event:', error);
@@ -62,6 +76,16 @@ const Events: React.FC<EventsProps> = () => {
   const handleEditClick = (event: Event) => {
     setEditingEvent(event);
     setIsFormOpen(true);
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/events/${eventId}`);
+      setEvents(events.filter(event => event._id !== eventId));
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      setError('Failed to delete event. Please try again.');
+    }
   };
 
   const handleFormSubmit = (eventData: Omit<Event, '_id'>) => {
@@ -98,13 +122,42 @@ const Events: React.FC<EventsProps> = () => {
         </div>
       )}
       {events.map((event) => (
-        <div key={event._id} className="mb-4 last:mb-0">
-          <h3 className="text-lg font-semibold text-green-700">{event.title}</h3>
-          <p className="text-gray-600">{event.subtitle}</p>
-          <p className="text-gray-600">{event.body}</p>
-          <p className="text-sm text-gray-500">{event.footer}</p>
-          <p className="text-sm text-gray-500 mt-1">Date: {new Date(event.date).toLocaleDateString()}</p>
+        <div key={event._id} className="mb-8 bg-white rounded-md shadow-md overflow-hidden">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-green-700">{event.title}</h3>
+            <div>
+              <button
+                onClick={() => handleEditClick(event)}
+                className="text-blue-500 hover:text-blue-600 mr-2"
+                aria-label="Edit event"
+              >
+                <FaEdit size={20} />
+              </button>
+              <button
+                onClick={() => handleDeleteEvent(event._id)}
+                className="text-red-500 hover:text-red-600"
+                aria-label="Delete event"
+              >
+                <FaTrash size={20} />
+              </button>
+            </div>
+          </div>
+          {event.image && event.image.s3Url && (
+            <div className="mb-4 flex justify-center">
+              <img
+                src={event.image.s3Url}
+                alt={event.title}
+                className="max-w-full h-auto max-h-48 object-contain"
+              />
+            </div>
+          )}
+          <p className="text-gray-600 mb-3">{event.subtitle}</p>
+          <p className="text-gray-600 mb-4">{event.body}</p>
+          <p className="text-sm text-gray-500 mb-1">{event.footer}</p>
+          <p className="text-sm text-gray-500">Date: {new Date(event.date).toLocaleDateString()}</p>
         </div>
+      </div>
       ))}
     </div>
   );
