@@ -6,10 +6,17 @@ export type DashBoardData = {
 };
 
 export interface Announcement {
-    id: number;
+    _id: string;
     title: string;
-    content: string;
-    date: string;
+    author: string;
+    body: string;
+    image?:{
+        s3key?: string;
+        s3Url?: string;
+    };
+    startDate: string;
+    endDate: string;
+    file?: File;
   }
   
   export interface Event {
