@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../assets/style.css'; 
 import { API_BASE_URL } from '../constant/data';
-import { Announcement } from '../constant/type';
+import { Announcement, Event } from '../constant/type';
 import AnnouncementModal from '../component/AnnouncementModal';
+import EventModal from '../component/EventModal';
 
 const HomePage: React.FC = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -13,6 +14,10 @@ const HomePage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+    const [events, setEvents] = useState<Event[]>([]);
+    const [eventsLoading, setEventsLoading] = useState(true);
+    const [eventsError, setEventsError] = useState<string | null>(null);
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
     useEffect(() => {
         const fetchAnnouncements = async () => {
@@ -30,6 +35,24 @@ const HomePage: React.FC = () => {
         };
 
         fetchAnnouncements();
+    }, []);
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                setEventsLoading(true);
+                const res = await axios.get(`${API_BASE_URL}/events`);
+                setEvents(res.data);
+                setEventsError(null);
+            } catch (err) {
+                setEventsError('Failed to fetch events');
+                console.error('Error fetching events:', err);
+            } finally {
+                setEventsLoading(false);
+            }
+        };
+
+        fetchEvents();
     }, []);
 
     useEffect(() => {
@@ -83,6 +106,38 @@ const HomePage: React.FC = () => {
         );
     };
 
+    const renderEventsContent = () => {
+        if (eventsLoading) {
+            return <div className="text-white">Loading events...</div>;
+        }
+
+        if (eventsError) {
+            return <div className="text-red-500">{eventsError}</div>;
+        }
+
+        return (
+            <div className="space-y-4 overflow-y-auto max-h-[500px] pr-2">
+                {events.map((event, index) => (
+                    <div 
+                        key={index}
+                        className="bg-white rounded-lg p-4 shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                        onClick={() => setSelectedEvent(event)}
+                    >
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-800">{event.title}</h3>
+                                <p className="text-sm text-gray-600">{event.subtitle}</p>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-green-500 font-semibold">{new Date(event.date).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
     return (
         <div className="min-h-screen flex flex-col">
             <header className="bg-white text-green-500">
@@ -127,14 +182,19 @@ const HomePage: React.FC = () => {
                 backgroundRepeat: 'no-repeat',
                 minHeight: '0'
             }}>
-                <div className="flex mb-8">
-                    <div className="bg-transparent p-4 h-96">
-                        {/* Left side content here */}
+                <div className="flex flex-col h-full">
+                    <div className="flex flex-1 gap-4 mb-4">
+                        <div className="flex-1"></div>
+                        <div className="w-1/3 bg-gray-700 bg-opacity-50 p-4 h-[600px]">
+                            <h2 className="text-2xl font-bold mb-4 text-green-500">Upcoming Events</h2>
+                            {renderEventsContent()}
+                        </div>
                     </div>
-                </div>
-                <div className="bg-gray-700 bg-opacity-50 p-4">
-                    <h2 className="text-2xl font-bold mb-4 text-green-500">Announcement</h2>
-                    {renderAnnouncementsContent()}
+
+                    <div className="w-full bg-gray-700 bg-opacity-50 p-4">
+                        <h2 className="text-2xl font-bold mb-4 text-green-500">Announcements</h2>
+                        {renderAnnouncementsContent()}
+                    </div>
                 </div>
             </main>
 
@@ -146,6 +206,13 @@ const HomePage: React.FC = () => {
                 <AnnouncementModal 
                     announcement={selectedAnnouncement}
                     onClose={() => setSelectedAnnouncement(null)}
+                />
+            )}
+
+            {selectedEvent && (
+                <EventModal 
+                    event={selectedEvent}
+                    onClose={() => setSelectedEvent(null)}
                 />
             )}
         </div>
