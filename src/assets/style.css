@@ -1,0 +1,41 @@
+/* Reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Custom dropdown animation */
+  .dropdown-content {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  
+  .dropdown-content:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Smooth hover transitions */
+  a {
+    transition: all 0.2s ease;
+  }
+  
+  /* Optional: Add some custom scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }

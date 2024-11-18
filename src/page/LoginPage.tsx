@@ -18,7 +18,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             email,
             password,
         });
-        navigate('/');
+        navigate('/dashboard');
 
     } catch (error) {
         console.error(error)
