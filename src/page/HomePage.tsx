@@ -5,6 +5,7 @@ import { API_BASE_URL } from '../constant/data';
 import { Announcement, Event } from '../constant/type';
 import AnnouncementModal from '../component/AnnouncementModal';
 import EventModal from '../component/EventModal';
+import { SchoolCalendar } from '../component/Calendar';
 
 // Add new type for active section
 type ActiveSection = 'home' | 'calendar' | 'history' | 'mission' | 'core-values' | 'faculty';
@@ -288,13 +289,7 @@ const HomePage: React.FC = () => {
 
             case 'calendar':
                 return (
-                    <div className="bg-gray-700 bg-opacity-50 p-6 rounded-lg">
-                        <h2 className="text-2xl font-bold mb-6 text-green-500">School Calendar</h2>
-                        <div className="bg-white p-4 rounded-lg">
-                            {/* Calendar content will go here */}
-                            <p>Calendar content will be implemented here</p>
-                        </div>
-                    </div>
+                    <SchoolCalendar />
                 );
 
             case 'history':
