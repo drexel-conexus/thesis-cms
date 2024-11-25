@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../assets/style.css'; 
-import { API_BASE_URL } from '../constant/data';
+import { API_BASE_URL, coreValuesData, missionData } from '../constant/data';
 import { Announcement, Event } from '../constant/type';
 import AnnouncementModal from '../component/AnnouncementModal';
 import EventModal from '../component/EventModal';
 import { SchoolCalendar } from '../component/Calendar';
+import Admission from '../component/Admission';
+import { Box, Typography, Paper, Divider } from '@mui/material';
 
 // Add new type for active section
-type ActiveSection = 'home' | 'calendar' | 'history' | 'mission' | 'core-values' | 'faculty';
+type ActiveSection = 'home' | 'calendar' | 'history' | 'mission' | 'core-values' | 'faculty' | 'admission';
 
 const HomePage: React.FC = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -231,11 +233,19 @@ const HomePage: React.FC = () => {
                                 School Calendar
                             </button>
                         </li>
+                        <li>
+                            <button 
+                                onClick={() => setActiveSection('admission')}
+                                className={`hover:underline ${activeSection === 'admission' ? 'underline' : ''}`}
+                            >
+                                Admission
+                            </button>
+                        </li>
                     </ul>
                 </nav>
             </header>
 
-            <main className="flex-grow p-4 flex flex-col" style={{
+            <main className="flex-grow p-4 flex flex-col bg-gradient-to-b from-green-50 to-green-100" style={{
                 backgroundImage: "url('/images/bg.jpg')",
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
@@ -305,24 +315,71 @@ const HomePage: React.FC = () => {
 
             case 'mission':
                 return (
-                    <div className="bg-gray-700 bg-opacity-50 p-6 rounded-lg">
-                        <h2 className="text-2xl font-bold mb-6 text-green-500">Mission & Vision</h2>
-                        <div className="bg-white p-4 rounded-lg">
-                            {/* Mission content will go here */}
-                            <p>Mission and vision content will be implemented here</p>
-                        </div>
-                    </div>
+                    <Box className="bg-gray-700 bg-opacity-50 p-6 rounded-lg">
+                        <Typography variant="h3" className="mb-6 text-green-500 font-bold text-center">
+                            {missionData.Title}
+                        </Typography>
+                        
+                        <Paper elevation={3} className="p-8">
+                            <Box className="space-y-8">
+                                <Box>
+                                    <Typography variant="h4" className="text-green-700 font-semibold mb-4">
+                                        Mission
+                                    </Typography>
+                                    <Typography variant="h6" className="text-gray-700 leading-relaxed">
+                                        {missionData.Content.split('\n')[0]}
+                                    </Typography>
+                                </Box>
+
+                                <Divider />
+
+                                <Box>
+                                    <Typography variant="h4" className="text-green-700 font-semibold mb-4">
+                                        Vision
+                                    </Typography>
+                                    <Typography variant="h6" className="text-gray-700 leading-relaxed">
+                                        {missionData.Content.split('\n')[1]}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Paper>
+                    </Box>
                 );
 
             case 'core-values':
                 return (
-                    <div className="bg-gray-700 bg-opacity-50 p-6 rounded-lg">
-                        <h2 className="text-2xl font-bold mb-6 text-green-500">Core Values</h2>
-                        <div className="bg-white p-4 rounded-lg">
-                            {/* Core values content will go here */}
-                            <p>Core values content will be implemented here</p>
-                        </div>
-                    </div>
+                    <Box className="bg-gray-700 bg-opacity-50 p-6 rounded-lg">
+                        <Typography variant="h3" className="mb-6 text-green-500 font-bold text-center">
+                            {coreValuesData.Title}
+                        </Typography>
+                        
+                        <Paper elevation={3} className="p-8">
+                            <Typography variant="h4" className="text-center mb-6 text-green-700 font-semibold">
+                                {coreValuesData.Subtitle}
+                            </Typography>
+                            
+                            <Divider className="my-6" />
+                            
+                            <Box className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                                {['Veritas', 'Unitas', 'Caritas'].map((value) => (
+                                    <Paper key={value} elevation={2} className="p-6 text-center bg-green-50">
+                                        <Typography variant="h4" className="text-green-700 font-bold mb-3">
+                                            {value}
+                                        </Typography>
+                                        <Typography variant="h5" className="text-gray-600">
+                                            {value === 'Veritas' && 'Truth'}
+                                            {value === 'Unitas' && 'Unity'}
+                                            {value === 'Caritas' && 'Love'}
+                                        </Typography>
+                                    </Paper>
+                                ))}
+                            </Box>
+
+                            <Typography variant="h6" className="text-gray-700 leading-relaxed text-center">
+                                {coreValuesData.Content}
+                            </Typography>
+                        </Paper>
+                    </Box>
                 );
 
             case 'faculty':
@@ -334,6 +391,11 @@ const HomePage: React.FC = () => {
                             <p>Faculty and staff content will be implemented here</p>
                         </div>
                     </div>
+                );
+
+            case 'admission':
+                return (
+                    <Admission />
                 );
 
             default:

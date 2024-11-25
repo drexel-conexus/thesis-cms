@@ -25,7 +25,7 @@ export interface Announcement {
     subtitle: string;
     body: string;
     footer?: string;
-    date: string;
+    date: Date;
     image: {
       s3key: string;
       s3Url: string;
