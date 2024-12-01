@@ -7,20 +7,26 @@ import { User } from '../constant/type';
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string>('');
   const navigate = useNavigate();
 
 const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Add your login logic here
-    console.log('Login attempt with:', email, password);
+    setError('');
     try {
-        await axios.post<User>(`${API_BASE_URL}/login`, {
-            email,
-            password,
-        });
+        const response = await axios.post<User>(`${API_BASE_URL}/users/login`, {
+          email,
+          password,
+        }) as unknown as { data: { token: string } };
+        localStorage.setItem('token', response.data.token);
         navigate('/dashboard');
 
     } catch (error) {
+        if (axios.isAxiosError(error)) {
+          setError('Login failed. Please try again.');
+        } else {
+          setError('An unexpected error occurred. Please try again.');
+        }
         console.error(error)
     }
 };
@@ -29,6 +35,11 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     <div className="flex items-center justify-center min-h-screen bg-green-50">
       <div className="px-8 py-6 mt-4 text-left bg-white shadow-lg rounded-lg">
         <h3 className="text-2xl font-bold text-center text-green-700">Login to your account</h3>
+        {error && (
+          <div className="mt-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <div className="mt-4">
             <div>

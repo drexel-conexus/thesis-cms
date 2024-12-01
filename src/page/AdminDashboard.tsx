@@ -1,13 +1,19 @@
 // HomePage.tsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { dashboardData } from '../constant/data';
 import Announcements from '../component/Announcement';
 import Events from '../component/Event';
 import Users from '../component/User';
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'announcements' | 'events' | 'user'>('announcements');
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -42,12 +48,12 @@ const AdminDashboard: React.FC = () => {
         </div>
         {/* Logout button */}
         <div className="p-4 border-t border-gray-200">
-          <Link 
-            to="/login" 
+          <button 
+            onClick={handleLogout}
             className="block w-full py-2 px-4 text-center text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-200"
           >
             Logout
-          </Link>
+          </button>
         </div>
       </div>
 

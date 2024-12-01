@@ -25,27 +25,30 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
         return months[monthName as keyof typeof months];
     };
 
-    useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                setLoading(true);
-                const { data } = await axios.get(`${API_BASE_URL}/events`);
-                console.log(data);
-                const parsedEvents: Event[] = data;
-                
-                setEvents(parsedEvents);
-            } catch (error) {
-                console.error('Error fetching events:', error);
-                if (axios.isAxiosError(error)) {
-                    console.error('Axios error:', error.response?.data);
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchEvents = async (month?: number) => {
+      try {
+          setLoading(true);
+          const query = month ? `?month=${month}` : '';
+          const { data } = await axios.get(`${API_BASE_URL}/events/current-month${query}`);
+          console.log(data);
+          const parsedEvents: Event[] = data;
+          
+          setEvents(parsedEvents);
+      } catch (error) {
+          console.error('Error fetching events:', error);
+          if (axios.isAxiosError(error)) {
+              console.error('Axios error:', error.response?.data);
+          }
+      } finally {
+          setLoading(false);
+      }
+  };
 
-        fetchEvents();
-    }, []);
+
+    useEffect(() => {
+        const month = currentMonth.toLocaleString('default', { month: 'long' });
+        fetchEvents(getMonthNumber(month));
+    }, [currentMonth]);
 
     const getMonthEvents = () => {
         return events.filter(event => {
@@ -84,7 +87,11 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
         <div className="flex flex-col gap-4 bg-gray-100 p-4 rounded-lg">
             <div className="flex gap-8">
                 <Calendar
-                    onChange={(value) => setCurrentMonth(value as Date)}
+                    onChange={(value) => {
+                        const newDate = value as Date;
+                        console.log(newDate);
+                        setCurrentMonth(newDate);
+                    }}
                     value={currentMonth}
                     tileContent={tileContent}
                     className="rounded-lg border-none !w-[400px]"
