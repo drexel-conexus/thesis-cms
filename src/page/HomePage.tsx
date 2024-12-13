@@ -89,10 +89,10 @@ const HomePage: React.FC = () => {
 
         return (
             <div className="overflow-hidden">
-                <div className="animate-scroll flex gap-3">
-                    {[...announcements, ...announcements].map((announcement, index) => (
+                <div className="flex gap-3">
+                    {announcements.map((announcement, index) => (
                         <div 
-                            key={index} 
+                            key={announcement._id || index}
                             className="flex-shrink-0 w-64 bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
                             onClick={() => setSelectedAnnouncement(announcement)}
                         >
