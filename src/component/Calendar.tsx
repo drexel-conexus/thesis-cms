@@ -108,7 +108,7 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
                             {monthEvents.map((event, index) => (
                                 <div key={index} className="bg-green-500 p-3 rounded">
                                     <h4 className="font-medium">
-                                        {event.date.toLocaleDateString()} - {event.title}
+                                        {new Date(event.date).toLocaleDateString()} - {event.title}
                                     </h4>
                                     <p className="text-sm text-gray-600">{event.body}</p>
                                 </div>
