@@ -1,0 +1,167 @@
+{
+    "administrators": [
+        {
+            "name": "Rev. Fr. Pederito A. Aparece, O.S.A.",
+            "titles": ["Director", "Principal"]
+        },
+        {
+            "name": "Rev. Fr. Raul M. Marchan, O.S.A.",
+            "titles": [
+                "School Treasurer", 
+                "Registrar", 
+                "Human Resource Director"
+            ]
+        },
+        {
+            "name": "Rev. Fr. Melitito Pocholo C. Visda, Jr, O.S.A.",
+            "titles": [
+                "Director Campus Ministry", 
+                "General Services"
+            ]
+        },
+        {
+            "name": "Rev. Fr. Nelson G. Zerda, O.S.A.",
+            "titles": ["Parish Priest"]
+        },
+        {
+            "name": "Fray Leonardo A. Jallorina, O.S.A.",
+            "titles": [
+                "Sports Director", 
+                "Alumni Director"
+            ]
+        },
+        {
+            "name": "Mrs. Nora P. Lopez",
+            "titles": ["Assistant Principal"]
+        },
+        {
+            "name": "Ms. Judy Ann D. Tagulalap",
+            "titles": ["Academic Coordinator"]
+        }
+    ],
+    "academic_staff": [
+        {
+            "name": "Mrs. Estela L. Gonzales",
+            "titles": [
+                "Pre-Kinder and Kinder Adviser"
+            ],
+            "subjects": [
+                "All Pre-Kinder and Kinder Subjects"
+            ]
+        },
+        {
+            "name": "Ms. J-Lovely G. Vispo",
+            "titles": [
+                "Grade 1 St. Monica Adviser",
+                "English Club Co-Adviser"
+            ],
+            "subjects": [
+                "All Grade 1 Subjects (except Computer)"
+            ]
+        },
+        {
+            "name": "Ms. Camille J. Jarme",
+            "titles": [
+                "Grade 2 Our Lady of Consolation Adviser",
+                "Filipino Club Co-Adviser"
+            ],
+            "subjects": [
+                "All Grade 2 Subjects (except Computer)"
+            ]
+        },
+        {
+            "name": "Ms. Shella May P. Besares",
+            "titles": [
+                "Grade 3 St. Alypius Adviser",
+                "Arts Club Adviser"
+            ],
+            "subjects": [
+                "All Grade 3 Subjects (except Computer)"
+            ]
+        },
+        {
+            "name": "Mr. Eldjon P. Gagnao",
+            "titles": [
+                "Grade 4 Our Lady of Good Counsel Adviser",
+                "Values Education Coordinator",
+                "Values Club Adviser",
+                "Sports Co-Coordinator"
+            ],
+            "subjects": [
+                "GMRC 4",
+                "ESP 5",
+                "English 4",
+                "Mathematics 6",
+                "HELE 4",
+                "MAPEH 4"
+            ]
+        }
+    ],
+    "academic_non_teaching_staff": [
+        {
+            "name": "Ms. Reyme M. Cantollino",
+            "titles": [
+                "Guidance Coordinator",
+                "Campus Ministry Co-Coordinator"
+            ]
+        }
+    ],
+    "non_academic_staff": [
+        {
+            "name": "Ms. Merla A. De la Cruz",
+            "titles": ["Office Staff"]
+        },
+        {
+            "name": "Ms. Mary Rose S. Sumugod",
+            "titles": ["Accounting/Purchasing Clerk"]
+        },
+        {
+            "name": "Ms. Loveline Calzado",
+            "titles": ["Cashier"]
+        },
+        {
+            "name": "Mr. Arnel Consejo",
+            "titles": ["Part-Time Computer Technician"]
+        },
+        {
+            "name": "Ms. Daisy E. Perez",
+            "titles": ["Part-Time Bookkeeper"]
+        }
+    ],
+    "medical_dental_staff": [
+        {
+            "name": "Dr. Kirsten Flor L. Inocentes",
+            "titles": ["School Dentist"]
+        },
+        {
+            "name": "Dr. Rosene C. Debuque",
+            "titles": ["School Physician"]
+        }
+    ],
+    "support_staff": [
+        {
+            "name": "Ms. Evangeline A. De la Cruz",
+            "titles": ["Canteen In-Charge"]
+        },
+        {
+            "name": "Mr. Felix S. Gonzales",
+            "titles": ["Maintenance"]
+        },
+        {
+            "name": "Mr. Jose Ronald S. Señoran",
+            "titles": ["Maintenance"]
+        },
+        {
+            "name": "Mr. Alvin P. Legislador",
+            "titles": ["Maintenance"]
+        },
+        {
+            "name": "Mr. Rogelio Sumagaysay",
+            "titles": ["Maintenance"]
+        },
+        {
+            "name": "Mr. Joel C. Del Pilar",
+            "titles": ["School Driver"]
+        }
+    ]
+}

@@ -5,10 +5,11 @@ import { dashboardData } from '../constant/data';
 import Announcements from '../component/Announcement';
 import Events from '../component/Event';
 import Users from '../component/User';
+import Home from '../component/Home';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'announcements' | 'events' | 'user'>('announcements');
+  const [activeTab, setActiveTab] = useState<'announcements' | 'events' | 'user' | 'home'>('announcements');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -23,6 +24,8 @@ const AdminDashboard: React.FC = () => {
         return <Events events={dashboardData.events} />;
       case 'user':
         return <Users users={dashboardData.users} />;
+      case 'home':
+        return <Home />;
       default:
         return null;
     }
@@ -35,7 +38,7 @@ const AdminDashboard: React.FC = () => {
         <div className="p-4 flex-grow">
           <h2 className="text-2xl font-bold text-green-700 mb-4">Dashboard</h2>
           <nav>
-            {['announcements', 'events', 'user'].map((tab) => (
+            {['announcements', 'events', 'user', 'home'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as 'announcements' | 'events' | 'user')}

@@ -47,7 +47,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               <input
                 type="text"
                 placeholder="Email"
-                className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-green-600"
+                className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-green-600 text-green-700"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -58,7 +58,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               <input
                 type="password"
                 placeholder="Password"
-                className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-green-600"
+                className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-green-600 text-green-700"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
