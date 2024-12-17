@@ -6,6 +6,8 @@ import './Calendar.css';
 import { API_BASE_URL } from '../constant/data';
 import axios from 'axios';
 import { Event } from '../constant/type';
+import { EventsList } from './EventsList';
+
 interface SchoolCalendarProps {
     events?: Event[];
 }
@@ -46,7 +48,11 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
 
 
     useEffect(() => {
+        console.log('Current Month changed:', currentMonth);
         const month = currentMonth.toLocaleString('default', { month: 'long' });
+        console.log('Month string:', month);
+        const monthNum = getMonthNumber(month);
+        console.log('Month number:', monthNum);
         fetchEvents(getMonthNumber(month));
     }, [currentMonth]);
 
@@ -80,43 +86,51 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
     const monthEvents = getMonthEvents();
 
     if (loading) {
-        return <div>Loading events...</div>;
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <div className="bg-gradient-to-br from-green-50 to-white rounded-lg shadow-lg p-6 border border-green-100">
+                    <div className="text-center py-8 text-gray-500">Loading calendar events...</div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="flex flex-col gap-4 bg-gray-100 p-4 rounded-lg">
-            <div className="flex gap-8">
-                <Calendar
-                    onChange={(value) => {
-                        const newDate = value as Date;
-                        console.log(newDate);
-                        setCurrentMonth(newDate);
-                    }}
-                    value={currentMonth}
-                    tileContent={tileContent}
-                    className="rounded-lg border-none !w-[400px]"
-                    view="month"
-                    onClickDay={(value, event) => event.preventDefault()}
-                />
+        <div className="container mx-auto px-4 py-8">
+            <div className="bg-gradient-to-br from-green-50 to-white rounded-lg shadow-lg p-6 border border-green-100">
+                <h2 className="text-3xl font-bold text-green-600 mb-8 text-center">School Calendar</h2>
                 
-                <div className="flex-1 max-w-md">
-                    <h3 className="text-lg font-semibold mb-2 text-center text-green-500">
-                        Events for {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                    </h3>
-                    {monthEvents.length > 0 ? (
-                        <div className="space-y-2">
-                            {monthEvents.map((event, index) => (
-                                <div key={index} className="bg-green-500 p-3 rounded">
-                                    <h4 className="font-medium">
-                                        {new Date(event.date).toLocaleDateString()} - {event.title}
-                                    </h4>
-                                    <p className="text-sm text-gray-600">{event.body}</p>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500">No events for this month</p>
-                    )}
+                <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="lg:w-[450px]">
+                        <Calendar
+                            onChange={(value) => {
+                                if (value instanceof Date) {
+                                    setCurrentMonth(value);
+                                } else if (Array.isArray(value) && value[0] instanceof Date) {
+                                    setCurrentMonth(value[0]);
+                                }
+                            }}
+                            value={currentMonth}
+                            tileContent={tileContent}
+                            className="rounded-lg border-none w-full"
+                            view="month"
+                            onClickDay={(value, event) => {
+                                event.preventDefault();
+                            }}
+                            onActiveStartDateChange={({ activeStartDate }) => {
+                                if (activeStartDate) {
+                                    setCurrentMonth(activeStartDate);
+                                }
+                            }}
+                        />
+                    </div>
+                    
+                    <div className="flex-1">
+                        <h3 className="text-xl font-semibold mb-6 text-green-700 border-b-2 border-green-200 pb-2">
+                            Events for {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                        </h3>
+                        <EventsList events={monthEvents} loading={loading} />
+                    </div>
                 </div>
             </div>
         </div>

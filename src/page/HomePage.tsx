@@ -446,7 +446,7 @@ const HomePage: React.FC = () => {
                                     </div>
                                     <button
                                         className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition-all duration-200 shadow-md hover:shadow-lg active:transform active:scale-95"
-                                        onClick={() => {/* Add view all announcements handler if needed */}}
+                                        onClick={() => setActiveSection('announcements')}
                                     >
                                         View All
                                         <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">

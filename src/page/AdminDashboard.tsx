@@ -6,10 +6,11 @@ import Announcements from '../component/Announcement';
 import Events from '../component/Event';
 import Users from '../component/User';
 import Home from '../component/Home';
+import AdminAdmissions from '../component/AdminAdmissions';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'announcements' | 'events' | 'user' | 'home'>('announcements');
+  const [activeTab, setActiveTab] = useState<'announcements' | 'events' | 'user' | 'home' | 'admissions'>('announcements');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -26,6 +27,8 @@ const AdminDashboard: React.FC = () => {
         return <Users users={dashboardData.users} />;
       case 'home':
         return <Home />;
+      case 'admissions':
+        return <AdminAdmissions />;
       default:
         return null;
     }
@@ -38,10 +41,10 @@ const AdminDashboard: React.FC = () => {
         <div className="p-4 flex-grow">
           <h2 className="text-2xl font-bold text-green-700 mb-4">Dashboard</h2>
           <nav>
-            {['announcements', 'events', 'user', 'home'].map((tab) => (
+            {['announcements', 'events', 'user', 'home', 'admissions'].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab as 'announcements' | 'events' | 'user')}
+                onClick={() => setActiveTab(tab as typeof activeTab)}
                 className={`w-full text-left p-2 rounded mt-2 ${activeTab === tab ? 'bg-green-100 text-green-700' : 'text-gray-600 hover:bg-green-50'}`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
