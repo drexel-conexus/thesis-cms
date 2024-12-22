@@ -14,7 +14,7 @@ import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 import facultyData from '../assets/faculty.json';
 
 // Update ActiveSection type
-type ActiveSection = 'home' | 'calendar' | 'mission' | 'core-values' | 'faculty' | 'admission' | 'announcements';
+type ActiveSection = 'home' | 'calendar' | 'mission' | 'core-values' | 'faculty' | 'admission' | 'announcements' | 'history'
 
 // Add custom arrow components
 const CustomArrow = ({ direction, onClick }: { direction: 'prev' | 'next', onClick?: () => void }) => (
@@ -300,6 +300,17 @@ const HomePage: React.FC = () => {
                                         className="block w-full text-left px-4 py-2 hover:bg-gray-200"
                                     >
                                         Mission & Vision
+                                    </button>
+                                </li>
+                                <li>
+                                    <button 
+                                        onClick={() => {
+                                            setActiveSection('history');
+                                            setIsDropdownOpen(false);
+                                        }}
+                                        className="block w-full text-left px-4 py-2 hover:bg-gray-200"
+                                    >
+                                        History
                                     </button>
                                 </li>
                                 <li>
@@ -690,6 +701,68 @@ const HomePage: React.FC = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            case 'history':
+                return (
+                    <div className="container mx-auto px-4 py-8">
+                        <div className="bg-gradient-to-br from-green-50 to-white rounded-lg shadow-lg p-6 border border-green-100">
+                            <h2 className="text-3xl font-bold text-green-600 mb-8 text-center">School History</h2>
+                            
+                            <div className="space-y-8">
+                                <div className="prose max-w-none text-green-600">
+                                    <p className="mb-6">
+                                        At the heart of Iloilo City, in front of the historic Plaza Libertad, stands a prominent institution that has molded and nurtured countless young minds not only to excel in society but to live according to the norms of Christian living. Its founder and administrators more than 50 years ago had conceived education's ultimate goal and that is to understand the existence of man in relation to God. It is on this principle that the YLAC ESCUELA DE SAN JOSE, INC. was founded in 1950 through the effort of the Asociacion Catolica de Ylongos, Inc., known as Youth Association for Charity YLAC in 1957. Its name was changed to San Jose Parochial School and in 1988 was transformed to what is now the SAN JOSE CATHOLIC SCHOOL.
+                                    </p>
+
+                                    <div className="bg-green-50 p-6 rounded-lg mb-8">
+                                        <h3 className="text-xl font-semibold text-green-700 mb-4">The Heraldic Description Of the School Seal</h3>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <h4 className="font-semibold mb-2">The Heart</h4>
+                                                <p>The symbol of love and charity, which is the first rule of Saint Augustine.</p>
+                                                
+                                                <h4 className="font-semibold mt-4 mb-2">The Book</h4>
+                                                <p>This represents Saint Augustine as a profound and prolific writer and one of the greatest Doctors of the Church.</p>
+                                                
+                                                <h4 className="font-semibold mt-4 mb-2">The Flame</h4>
+                                                <p>Symbol of the burning missionary life of Saint Augustine.</p>
+                                            </div>
+                                            
+                                            <div>
+                                                <h4 className="font-semibold mb-2">The Colors</h4>
+                                                <ul className="list-disc pl-6 space-y-2">
+                                                    <li><span className="text-white bg-green-600 px-2 rounded">White</span> for Peace</li>
+                                                    <li><span className="text-red-600">Red</span> for Courage</li>
+                                                    <li><span className="text-yellow-500">Gold</span> for Victory</li>
+                                                </ul>
+                                                
+                                                <h4 className="font-semibold mt-4 mb-2">The Motto</h4>
+                                                <p>Virtus, Scientia et Caritas</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-green-50 p-6 rounded-lg">
+                                        <h4 className="text-lg font-semibold text-green-700 mb-2">Present Day</h4>
+                                        <p>
+                                            San Jose Catholic School is owned and operated by the Augustinians of the Province of Sto. Niño de Cebu-Philippines. It is an educational institution offering a pre-elementary, basic elementary and secondary education.
+                                        </p>
+                                        <p className="mt-4">
+                                            For inquiries, please contact:
+                                            <br />
+                                            Digital Mobile Campus: https://sjcs-ems.digitaleducation.net/
+                                            <br />
+                                            Phone: 326-47-65 / 336-19-21
+                                            <br />
+                                            Location: Plaza Libertad, Iloilo City
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
