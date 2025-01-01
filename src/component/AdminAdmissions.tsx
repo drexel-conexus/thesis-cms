@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../constant/data';
+import { useNavigate } from 'react-router-dom';
 
 interface Admission {
     _id: string;
@@ -51,32 +52,60 @@ const AdminAdmissions: React.FC = () => {
         fileNumber: null
     });
 
-    useEffect(() => {
-        fetchAdmissions();
-    }, []);
+    const navigate = useNavigate();
 
-    const fetchAdmissions = async () => {
+    const fetchAdmissions = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
         try {
-            setLoading(true);
-            const response = await axios.get(`${API_BASE_URL}/registration`);
+            const response = await axios.get(`${API_BASE_URL}/registration`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             setAdmissions(response.data);
         } catch (err) {
-            setError('Failed to fetch admissions');
-            console.error(err);
+            if (axios.isAxiosError(err) && (err.response?.status === 401 || err.response?.status === 403)) {    
+                navigate('/login');
+            } else {
+                setError('Failed to fetch admissions');
+                console.error(err);
+            }
         } finally {
             setLoading(false);
         }
-    };
+    }, [navigate]);
+
+    useEffect(() => {
+        fetchAdmissions();
+    }, [fetchAdmissions]);
 
     const handleSearch = async (key: string) => {
         if (!key.trim()) return;
-        
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
         try {
             setLoading(true);
-            const response = await axios.get(`${API_BASE_URL}/registration?fileNumber=${key}`);
-                setAdmissions(response.data);
+            const response = await axios.get(`${API_BASE_URL}/registration?fileNumber=${key}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setAdmissions(response.data);
         } catch (err) {
-            setError('No admission found with this file number');
+            if (axios.isAxiosError(err) && (err.response?.status === 401 || err.response?.status === 403)) {
+                navigate('/login');
+            } else {
+                setError('No admission found with this file number');
+            }
         } finally {
             setLoading(false);
         }

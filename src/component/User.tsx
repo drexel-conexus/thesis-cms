@@ -1,29 +1,38 @@
 // Users.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { User } from '../constant/type';
 import { API_BASE_URL } from '../constant/data';
 import axios from 'axios'
 import UserForm from './UserForm';
+import { useNavigate } from 'react-router-dom';
+
 interface UsersProps {
   users: User[];
 }
 
 const Users: React.FC<UsersProps> = () => {
+    const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
 
-    useEffect(() => {
-          fetchUsers();
-      }, []);
 
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-          const response = await axios.get<User[]>(`${API_BASE_URL}/users`);
+          const token = localStorage.getItem('token');
+          if (!token) {
+            navigate('/login');
+            return;
+          }
+          const response = await axios.get<User[]>(`${API_BASE_URL}/users`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
           setUsers(response.data);
         } catch (error) {
           console.error('Error fetching users:', error);
@@ -31,7 +40,11 @@ const Users: React.FC<UsersProps> = () => {
         } finally {
           setIsLoading(false);
         }
-      };
+      }, [navigate]);
+
+      useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]); 
     
       const handleAddUser = async (userData: Omit<User, '_id'>) => {
         try {

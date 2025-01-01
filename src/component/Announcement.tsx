@@ -1,47 +1,72 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Announcement } from '../constant/type';
 import axios from 'axios';
 import { API_BASE_URL } from '../constant/data';
 import { FaEdit, FaTrash } from 'react-icons/fa'; // Import icons
 import AnnouncementForm from './AnnouncementForm';
+import { useNavigate } from 'react-router-dom';
 
 interface AnnouncementsProps {
   announcements: Announcement[];
 }
 
 const Announcements: React.FC<AnnouncementsProps> = () => {
+  const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
 
-  useEffect(() => {
-    fetchAnnouncements();
-  }, []);
-
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get<Announcement[]>(`${API_BASE_URL}/announcements`);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      const response = await axios.get<Announcement[]>(`${API_BASE_URL}/announcements`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setAnnouncements(response.data);
     } catch (error) {
       console.error('Error fetching announcements:', error);
-      setError('Failed to fetch announcements. Please try again later.');
+      if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+        navigate('/login');
+      } else {
+        setError('Failed to fetch announcements. Please try again later.');
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
+
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, [fetchAnnouncements]);
 
   const handleAddAnnouncement = async (announcementData: Omit<Announcement, '_id'>) => {
     try {
       let image = announcementData.image;
       console.log(announcementData.file);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
       if (announcementData.file) {
         const formData = new FormData();
         formData.append('image', announcementData.file);
-        const res = await axios.post(`${API_BASE_URL}/upload`, formData);
+        const res = await axios.post(`${API_BASE_URL}/upload`, formData, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (res) {
           image = {
             s3key: res.data.s3key,
@@ -49,7 +74,12 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
           }
         }
       }
-      const response = await axios.post<Announcement>(`${API_BASE_URL}/announcements`, {...announcementData, image});
+
+      const response = await axios.post<Announcement>(`${API_BASE_URL}/announcements`, {...announcementData, image}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setAnnouncements([...announcements, response.data]);
     } catch (error) {
       console.error('Error adding announcement:', error);
@@ -59,7 +89,16 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
 
   const handleEditAnnouncement = async (announcementId: string, announcementData: Omit<Announcement, '_id'>) => {
     try {
-      const response = await axios.patch<Announcement>(`${API_BASE_URL}/announcements/${announcementId}`, announcementData);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      const response = await axios.patch<Announcement>(`${API_BASE_URL}/announcements/${announcementId}`, announcementData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setAnnouncements(announcements.map(announcement => announcement._id === announcementId ? response.data : announcement));
     } catch (error) {
       console.error('Error updating announcement:', error);

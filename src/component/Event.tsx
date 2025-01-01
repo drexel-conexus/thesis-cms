@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Event } from '../constant/type';
 import axios from 'axios';
 import { API_BASE_URL } from '../constant/data';
-import UserForm from './UserForm';
 import EventForm from './EventForm';
 import { FaEdit, FaTrash } from 'react-icons/fa'; // Import icons
+import { useNavigate } from 'react-router-dom';
 
 interface EventsProps {
   events: Event[];
@@ -16,33 +16,56 @@ const Events: React.FC<EventsProps> = () => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     try {
-      const response = await axios.get<Event[]>(`${API_BASE_URL}/events`);
+      const response = await axios.get<Event[]>(`${API_BASE_URL}/events`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setEvents(response.data);
     } catch (error) {
-      console.error('Error fetching events:', error);
-      setError('Failed to fetch events. Please try again later.');
+      if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+        navigate('/login');
+      } else {
+        console.error('Error fetching events:', error);
+        setError('Failed to fetch events. Please try again later.');
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const handleAddEvent = async (eventData: Omit<Event, '_id'>) => {
     try {
       let image = eventData.image;
       console.log(eventData.file);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
       if (eventData.file) {
         const formData = new FormData();
         formData.append('image', eventData.file);
-        const res = await axios.post(`${API_BASE_URL}/upload`, formData);
+        const res = await axios.post(`${API_BASE_URL}/upload`, formData, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (res) {
           image = {
             s3key: res.data.s3key,
@@ -53,14 +76,27 @@ const Events: React.FC<EventsProps> = () => {
       const response = await axios.post<Event>(`${API_BASE_URL}/events`, {...eventData, image});
       setEvents([...events, response.data]);
     } catch (error) {
-      console.error('Error adding event:', error);
-      setError('Failed to add event. Please try again.');
+      if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+        navigate('/login');
+      } else {
+        console.error('Error adding event:', error);
+        setError('Failed to add event. Please try again.');
+      }
     }
   };
 
   const handleEditEvent = async (eventId: string, eventData: Omit<Event, '_id'>) => {
     try {
-      const response = await axios.patch<Event>(`${API_BASE_URL}/events/${eventId}`, eventData);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      const response = await axios.patch<Event>(`${API_BASE_URL}/events/${eventId}`, eventData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setEvents(events.map(event => event._id === eventId ? response.data : event));
     } catch (error) {
       console.error('Error updating event:', error);
@@ -80,11 +116,24 @@ const Events: React.FC<EventsProps> = () => {
 
   const handleDeleteEvent = async (eventId: string) => {
     try {
-      await axios.delete(`${API_BASE_URL}/events/${eventId}`);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+        await axios.delete(`${API_BASE_URL}/events/${eventId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setEvents(events.filter(event => event._id !== eventId));
     } catch (error) {
-      console.error('Error deleting event:', error);
-      setError('Failed to delete event. Please try again.');
+      if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+        navigate('/login');
+      } else {
+        console.error('Error deleting event:', error);
+        setError('Failed to delete event. Please try again.');
+      }
     }
   };
 
