@@ -10,6 +10,17 @@ interface UsersProps {
   users: User[];
 }
 
+axios.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
+    }
+);
+
 const Users: React.FC<UsersProps> = () => {
     const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
@@ -23,46 +34,84 @@ const Users: React.FC<UsersProps> = () => {
         setIsLoading(true);
         setError(null);
         try {
-          const token = localStorage.getItem('token');
-          if (!token) {
-            navigate('/login');
-            return;
-          }
-          const response = await axios.get<User[]>(`${API_BASE_URL}/users`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
+            console.log('Fetching users...');
+            const token = localStorage.getItem('token');
+            console.log('Token:', token);
+            if (!token) {
+                navigate('/login');
+                return;
             }
-          });
-          setUsers(response.data);
+            const response = await axios.get<User[]>(`${API_BASE_URL}/users`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                validateStatus: (status) => status === 200
+            });
+            console.log('Response:', response);
+            setUsers(response.data);
         } catch (error) {
-          console.error('Error fetching users:', error);
-          setError('Failed to fetch users. Please try again later.');
+            setUsers([]);
+            if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+                navigate('/login');
+                localStorage.removeItem('token');
+                return;
+            }
         } finally {
-          setIsLoading(false);
+            setIsLoading(false);
         }
-      }, [navigate]);
+    }, [navigate]);
 
       useEffect(() => {
         fetchUsers();
     }, [fetchUsers]); 
     
       const handleAddUser = async (userData: Omit<User, '_id'>) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
         try {
-          const response = await axios.post<User>(`${API_BASE_URL}/users`, userData);
+          const response = await axios.post<User>(`${API_BASE_URL}/users`, userData, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+          });
           setUsers([...users, response.data]);
         } catch (error) {
-          console.error('Error adding user:', error);
-          setError('Failed to add user. Please try again.');
+          if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+            navigate('/login');
+            localStorage.removeItem('token');
+            return;
+          } else {
+            console.error('Error adding user:', error);
+            setError('Failed to add user. Please try again.');
+          }
         }
       };
     
       const handleEditUser = async (userId: string, userData: Omit<User, '_id'>) => {
+        const token = localStorage.getItem('token');  
+        if (!token) {
+            navigate('/login');
+            return;
+        }
         try {
-          const response = await axios.put<User>(`${API_BASE_URL}/users/${userId}`, userData);
+          const response = await axios.put<User>(`${API_BASE_URL}/users/${userId}`, userData, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+          });
           setUsers(users.map(user => user._id === userId ? response.data : user));
         } catch (error) {
-          console.error('Error updating user:', error);
-          setError('Failed to update user. Please try again.');
+          if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+            navigate('/login');
+            localStorage.removeItem('token');
+            return;
+          } else {
+            console.error('Error updating user:', error);
+            setError('Failed to update user. Please try again.');
+          }
         }
       };
 
@@ -89,6 +138,7 @@ const Users: React.FC<UsersProps> = () => {
       const handleFormCancel = () => {
         setIsFormOpen(false);
       };
+
 
   return (
     <div>
