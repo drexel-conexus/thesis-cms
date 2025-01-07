@@ -11,25 +11,38 @@ interface EventFormProps {
   onCancel: () => void;
 }
 
+interface FormData {
+  title: string;
+  subtitle: string;
+  body: string;
+  footer?: string;
+  date: string;
+  image: {
+    s3key: string;
+    s3Url: string;
+  };
+  file?: File;
+}
+
 const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState<Omit<Event, '_id'>>({
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     subtitle: '',
     body: '',
-    footer: '',
     date: new Date().toISOString(),
-    image: {
-        s3key: '',
-        s3Url: '',
-    },
-    file: undefined,
+    image: { s3key: '', s3Url: '' }
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (event) {
-      setFormData(event);
+        const { ...eventData } = event;
+        setFormData({
+            ...eventData,
+            date: new Date(event.date).toISOString(),
+            footer: event.footer || ''
+        });
     }
   }, [event]);
 
@@ -69,7 +82,10 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    onSubmit({
+        ...formData,
+        date: new Date(formData.date)
+    });
   };
 
   return (
@@ -120,7 +136,6 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSubmit, onCancel }) => {
               id="footer"
               value={formData.footer}
               onChange={handleChange}
-              required
               className="mt-1 block w-full border text-gray-500 bg-green-100 border-gray-300 rounded-md shadow-sm p-2"
             />
           </div>

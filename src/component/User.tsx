@@ -191,6 +191,8 @@ const Users: React.FC<UsersProps> = () => {
           </tbody>
         </table>
       </div>
+      {isLoading && <div>Loading...</div>}
+      {error && <div className="text-red-500">{error}</div>}
     </div>
   );
 };

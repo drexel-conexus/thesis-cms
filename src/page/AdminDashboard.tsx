@@ -1,11 +1,11 @@
 // HomePage.tsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { dashboardData } from '../constant/data';
 import Announcements from '../component/Announcement';
 import Events from '../component/Event';
 import Users from '../component/User';
-import Home from '../component/Home';
+import Home from '../component/home';
 import AdminAdmissions from '../component/AdminAdmissions';
 
 const AdminDashboard: React.FC = () => {

@@ -114,7 +114,7 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
                             tileContent={tileContent}
                             className="rounded-lg border-none w-full"
                             view="month"
-                            onClickDay={(value, event) => {
+                            onClickDay={(_, event) => {
                                 event.preventDefault();
                             }}
                             onActiveStartDateChange={({ activeStartDate }) => {

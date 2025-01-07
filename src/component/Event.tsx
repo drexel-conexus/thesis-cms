@@ -152,62 +152,64 @@ const Events: React.FC<EventsProps> = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-green-600">Events</h2>
-        <button
-          onClick={handleAddClick}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-        >
-          Add Event
-        </button>
-      </div>
-      {isFormOpen && (
-        <div className="mb-4">
-          <EventForm
-            event={editingEvent || undefined}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
+        {isLoading && <div>Loading...</div>}
+        {error && <div className="text-red-500">{error}</div>}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-green-600">Events</h2>
+          <button
+            onClick={handleAddClick}
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+          >
+            Add Event
+          </button>
         </div>
-      )}
-      {events.map((event) => (
-        <div key={event._id} className="mb-8 bg-white rounded-md shadow-md overflow-hidden">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold text-green-700">{event.title}</h3>
-            <div>
-              <button
-                onClick={() => handleEditClick(event)}
-                className="text-blue-500 hover:text-blue-600 mr-2"
-                aria-label="Edit event"
-              >
-                <FaEdit size={20} />
-              </button>
-              <button
-                onClick={() => handleDeleteEvent(event._id)}
-                className="text-red-500 hover:text-red-600"
-                aria-label="Delete event"
-              >
-                <FaTrash size={20} />
-              </button>
-            </div>
+        {isFormOpen && (
+          <div className="mb-4">
+            <EventForm
+              event={editingEvent || undefined}
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormCancel}
+            />
           </div>
-          {event.image && event.image.s3Url && (
-            <div className="mb-4 flex justify-center">
-              <img
-                src={event.image.s3Url}
-                alt={event.title}
-                className="max-w-full h-auto max-h-48 object-contain"
-              />
+        )}
+        {events.map((event) => (
+          <div key={event._id} className="mb-8 bg-white rounded-md shadow-md overflow-hidden">
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-green-700">{event.title}</h3>
+              <div>
+                <button
+                  onClick={() => handleEditClick(event)}
+                  className="text-blue-500 hover:text-blue-600 mr-2"
+                  aria-label="Edit event"
+                >
+                  <FaEdit size={20} />
+                </button>
+                <button
+                  onClick={() => handleDeleteEvent(event._id)}
+                  className="text-red-500 hover:text-red-600"
+                  aria-label="Delete event"
+                >
+                  <FaTrash size={20} />
+                </button>
+              </div>
             </div>
-          )}
-          <p className="text-gray-600 mb-3">{event.subtitle}</p>
-          <p className="text-gray-600 mb-4">{event.body}</p>
-          <p className="text-sm text-gray-500 mb-1">{event.footer}</p>
-          <p className="text-sm text-gray-500">Date: {new Date(event.date).toLocaleDateString()}</p>
+            {event.image && event.image.s3Url && (
+              <div className="mb-4 flex justify-center">
+                <img
+                  src={event.image.s3Url}
+                  alt={event.title}
+                  className="max-w-full h-auto max-h-48 object-contain"
+                />
+              </div>
+            )}
+            <p className="text-gray-600 mb-3">{event.subtitle}</p>
+            <p className="text-gray-600 mb-4">{event.body}</p>
+            <p className="text-sm text-gray-500 mb-1">{event.footer}</p>
+            <p className="text-sm text-gray-500">Date: {new Date(event.date).toLocaleDateString()}</p>
+          </div>
         </div>
-      </div>
-      ))}
+        ))}
     </div>
   );
 };
