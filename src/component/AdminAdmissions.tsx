@@ -263,6 +263,7 @@ const AdminAdmissions: React.FC = () => {
                         <div 
                             key={admission.fileNumber}
                             className="bg-white p-4 rounded-lg shadow hover:shadow-md cursor-pointer relative"
+                            onClick={() => setSelectedAdmission(admission)}
                         >
                             <div className="absolute top-2 right-2">
                                 <button
@@ -281,9 +282,11 @@ const AdminAdmissions: React.FC = () => {
                                     </svg>
                                 </button>
                             </div>
-                            <p className="font-bold text-green-600">File #: {admission.fileNumber}</p>
-                            <p className="text-green-600">{`${admission.firstName} ${admission.lastName}`}</p>
-                            <p className="text-green-600">{admission.gradeToEnroll}</p>
+                            <div onClick={() => setSelectedAdmission(admission)}>
+                                <p className="font-bold text-green-600">File #: {admission.fileNumber}</p>
+                                <p className="text-green-600">{`${admission.firstName} ${admission.lastName}`}</p>
+                                <p className="text-green-600">{admission.gradeToEnroll}</p>
+                            </div>
                         </div>
                     ))}
                 </div>
