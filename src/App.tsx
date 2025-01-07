@@ -6,7 +6,7 @@ import ProtectedRoute from './page/ProtectedRoute';
 
 function App() {
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <div className="min-h-screen bg-gray-100">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -19,6 +19,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route path="*" element={<HomePage />} />
         </Routes>
       </div>
     </Router>
