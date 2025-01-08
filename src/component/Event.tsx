@@ -73,7 +73,11 @@ const Events: React.FC<EventsProps> = () => {
           }
         }
       }
-      const response = await axios.post<Event>(`${API_BASE_URL}/events`, {...eventData, image});
+      const response = await axios.post<Event>(`${API_BASE_URL}/events`, {...eventData, image}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setEvents([...events, response.data]);
     } catch (error) {
       if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {

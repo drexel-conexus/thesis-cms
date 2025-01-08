@@ -118,7 +118,16 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
 
   const handleDeleteAnnouncement = async (announcementId: string) => {
     try {
-      await axios.delete(`${API_BASE_URL}/announcements/${announcementId}`);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      await axios.delete(`${API_BASE_URL}/announcements/${announcementId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setAnnouncements(announcements.filter(announcement => announcement._id !== announcementId));
     } catch (error) {
       console.error('Error deleting announcement:', error);
