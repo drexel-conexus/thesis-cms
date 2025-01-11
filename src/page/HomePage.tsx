@@ -34,6 +34,30 @@ const CustomArrow = ({ direction, onClick }: { direction: 'prev' | 'next', onCli
   </button>
 );
 
+// Add this loading skeleton component at the top level
+const AnnouncementSkeleton = () => (
+    <div className="animate-pulse">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="h-48 bg-gray-200"></div>
+            <div className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-gray-200 rounded-full p-2 h-8 w-8"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </div>
+                <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+                </div>
+                <div className="mt-4 flex items-center gap-1">
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    <div className="h-4 bg-gray-200 rounded-full w-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
 const HomePage: React.FC = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLUListElement>(null);
@@ -612,39 +636,83 @@ const HomePage: React.FC = () => {
                 return (
                     <div className="container mx-auto px-4 py-8">
                         <div className="bg-gradient-to-br from-green-50 to-white rounded-lg shadow-lg p-6 border border-green-100">
-                            <h2 className="text-3xl font-bold text-green-600 mb-8">School Announcements</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {announcements.map((announcement, index) => (
-                                    <div 
-                                        key={announcement._id || index}
-                                        className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-green-100 hover:border-green-300 group"
-                                        onClick={() => setSelectedAnnouncement(announcement)}
-                                    >
-                                        <div className="relative h-48">
-                                            <div className="absolute inset-0 bg-green-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300 z-10"></div>
-                                            <img 
-                                                src={announcement.image?.s3Url || '/images/default.png'}
-                                                alt={announcement.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        <div className="p-5">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors duration-200">
-                                                {announcement.title}
-                                            </h3>
-                                            <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                                                {announcement.body}
-                                            </p>
-                                            <div className="text-green-600 text-sm font-medium flex items-center gap-1 group-hover:text-green-700">
-                                                Read more
-                                                <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h2 className="text-3xl font-bold text-green-600 mb-2">School Announcements</h2>
+                                    <p className="text-green-600/80">Stay updated with the latest news and updates</p>
+                                </div>
+                                <div className="flex items-center gap-2 text-green-600">
+                                    <span className="text-sm font-medium">{announcements.length} Announcements</span>
+                                    <div className="h-4 w-px bg-green-200"></div>
+                                    <span className="text-sm">{new Date().toLocaleDateString()}</span>
+                                </div>
                             </div>
+
+                            {loading ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {[1, 2, 3, 4, 5, 6].map((n) => (
+                                        <AnnouncementSkeleton key={n} />
+                                    ))}
+                                </div>
+                            ) : error ? (
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span className="font-medium">Error Loading Announcements</span>
+                                    </div>
+                                    <p className="text-sm">{error}</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {announcements.map((announcement, index) => (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                                            key={announcement._id || index}
+                                            className="group relative bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-green-100 hover:border-green-300"
+                                            onClick={() => setSelectedAnnouncement(announcement)}
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-b from-black/0 to-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                                            <div className="relative h-48">
+                                                <img 
+                                                    src={announcement.image?.s3Url || '/images/default.png'}
+                                                    alt={announcement.title}
+                                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            </div>
+                                            <div className="p-5">
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <div className="bg-green-100 rounded-full p-2">
+                                                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                                                        </svg>
+                                                    </div>
+                                                    <h3 className="text-lg font-bold text-gray-800 group-hover:text-green-600 transition-colors duration-200 line-clamp-1">
+                                                        {announcement.title}
+                                                    </h3>
+                                                </div>
+                                                <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">
+                                                    {announcement.body}
+                                                </p>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="text-green-600 text-sm font-medium flex items-center gap-1 group-hover:text-green-700">
+                                                        Read more
+                                                        <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                                        </svg>
+                                                    </div>
+                                                    <span className="text-xs text-gray-500">
+                                                        {new Date(announcement.createdAt).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 );
