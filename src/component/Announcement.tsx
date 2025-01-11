@@ -10,6 +10,29 @@ interface AnnouncementsProps {
   announcements: Announcement[];
 }
 
+// Add loading skeleton component
+const LoadingSkeleton = () => (
+  <div className="animate-pulse">
+    <div className="bg-white rounded-lg border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] overflow-hidden">
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+          <div className="flex space-x-2">
+            <div className="h-6 w-6 bg-gray-200 rounded"></div>
+            <div className="h-6 w-6 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+        <div className="h-48 bg-gray-200 rounded mb-4"></div>
+        <div className="h-20 bg-gray-200 rounded mb-3"></div>
+        <div className="space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const Announcements: React.FC<AnnouncementsProps> = () => {
   const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -149,20 +172,37 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
   };
 
   return (
-    <div>
-      {isLoading && <div>Loading...</div>}
-      {error && <div className="text-red-500">{error}</div>}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-green-600">Announcements</h2>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-md">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-900">Announcements</h2>
         <button
           onClick={handleAddClick}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
         >
+          <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+          </svg>
           Add Announcement
         </button>
       </div>
+
       {isFormOpen && (
-        <div className="mb-4">  
+        <div className="mb-8">  
           <AnnouncementForm  
             announcement={editingAnnouncement || undefined}
             onSubmit={handleFormSubmit}
@@ -170,46 +210,75 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
           />
         </div>
       )}
-      {announcements.map((announcement) => (
-        <div key={announcement._id} className="mb-8 bg-white rounded-md shadow-md overflow-hidden">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold text-green-700">{announcement.title}</h3>
-            <div>
-              <button
-                onClick={() => handleEditClick(announcement)}
-                className="text-blue-500 hover:text-blue-600 mr-2"
-                aria-label="Edit announcement"
-              >
-                <FaEdit size={20} />
-              </button>
-              <button
-                onClick={() => handleDeleteAnnouncement(announcement._id)}
-                className="text-red-500 hover:text-red-600"
-                aria-label="Delete announcement"
-              >
-                <FaTrash size={20} />
-              </button>
+
+      {isLoading ? (
+        <>
+          <LoadingSkeleton />
+          <LoadingSkeleton />
+        </>
+      ) : (
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {announcements.map((announcement) => (
+            <div 
+              key={announcement._id} 
+              className="bg-white rounded-lg border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] overflow-hidden transform transition duration-200 hover:-translate-y-1 hover:shadow-[0_8px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)]"
+            >
+              <div className="relative">
+                {announcement.image && announcement.image.s3Url && (
+                  <div className="aspect-w-16 aspect-h-9">
+                    <img
+                      src={announcement.image.s3Url}
+                      alt={announcement.title}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                )}
+                <div className="absolute top-2 right-2 flex space-x-2">
+                  <button
+                    onClick={() => handleEditClick(announcement)}
+                    className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors duration-200"
+                    aria-label="Edit announcement"
+                  >
+                    <FaEdit className="text-blue-500 w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteAnnouncement(announcement._id)}
+                    className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors duration-200"
+                    aria-label="Delete announcement"
+                  >
+                    <FaTrash className="text-red-500 w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">
+                  {announcement.title}
+                </h3>
+                <p className="text-gray-600 mb-4 line-clamp-3">
+                  {announcement.body}
+                </p>
+                <div className="border-t pt-4">
+                  <div className="flex items-center text-sm text-gray-500">
+                    <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>
+                      {new Date(announcement.startDate).toLocaleDateString()} - {new Date(announcement.endDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center mt-2 text-sm text-gray-500">
+                    <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span>{announcement.author}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          {announcement.image && announcement.image.s3Url && (
-            <div className="mb-4 flex justify-center">
-              <img
-                src={announcement.image.s3Url}
-                alt={announcement.title}
-                className="max-w-full h-auto max-h-48 object-contain"
-              />
-            </div>
-          )}
-          
-          <p className="text-gray-600 mb-3">{announcement.body}</p>
-          <div className="text-sm text-gray-500">
-            <p>Date: {new Date(announcement.startDate).toLocaleDateString()} - {new Date(announcement.endDate).toLocaleDateString()}</p>
-            <p>Author: {announcement.author}</p>
-          </div>
+          ))}
         </div>
-      </div>
-      ))}
+      )}
     </div>
   );
 };
