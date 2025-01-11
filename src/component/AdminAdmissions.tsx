@@ -347,6 +347,16 @@ const AdminAdmissions: React.FC = () => {
         </div>
     );
 
+    const getAdmissionStats = () => {
+        const total = admissions.length;
+        const byGrade = admissions.reduce((acc, curr) => {
+            acc[curr.gradeToEnroll] = (acc[curr.gradeToEnroll] || 0) + 1;
+            return acc;
+        }, {} as Record<GradeLevel, number>);
+
+        return { total, byGrade };
+    };
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
@@ -354,6 +364,50 @@ const AdminAdmissions: React.FC = () => {
                     <span className="text-green-600">Admission</span> Applications
                 </h2>
                 
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        {[...Array(4)].map((_, index) => (
+                            <div key={index} className="bg-gray-50 rounded-xl p-4 animate-pulse">
+                                <div className="flex items-center justify-between">
+                                    <div className="space-y-2">
+                                        <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                                        <div className="h-8 w-16 bg-gray-300 rounded"></div>
+                                    </div>
+                                    <div className="bg-gray-200 rounded-full p-3 h-12 w-12"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div className="bg-green-50 rounded-xl p-4 border border-green-100">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-green-600">Total Applications</p>
+                                    <p className="text-2xl font-bold text-green-700">{getAdmissionStats().total}</p>
+                                </div>
+                                <div className="bg-green-100 rounded-full p-3">
+                                    <FaGraduationCap className="w-6 h-6 text-green-600" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {Object.entries(getAdmissionStats().byGrade).map(([grade, count]) => (
+                            <div key={grade} className="bg-white rounded-xl p-4 border border-gray-100 hover:border-green-200 transition-colors">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">{grade}</p>
+                                        <p className="text-2xl font-bold text-gray-800">{count}</p>
+                                    </div>
+                                    <div className="bg-gray-50 rounded-full p-3">
+                                        <FaUser className="w-5 h-5 text-gray-400" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1 relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
