@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../constant/data';
 import { useNavigate } from 'react-router-dom';
+import Select from 'react-select';
+import { GradeLevel } from '../constant/type';
 
 interface Admission {
     _id: string;
@@ -23,7 +25,7 @@ interface Admission {
     phoneNumber: string;
     email?: string;
     lastSchoolAttended?: string;
-    gradeToEnroll: string;
+    gradeToEnroll: GradeLevel;
     motherName: string;
     motherPhoneNumber: string;
     motherOccupation?: string;
@@ -51,8 +53,16 @@ const AdminAdmissions: React.FC = () => {
         id: null,
         fileNumber: null
     });
+    const [selectedGrades, setSelectedGrades] = useState<GradeLevel[]>([]);
 
     const navigate = useNavigate();
+
+    const gradeOptions = Object.values(GradeLevel).map(grade => ({
+        value: grade,
+        label: grade
+    }));
+
+    const filteredAdmissions = admissions;
 
     const fetchAdmissions = useCallback(async () => {
         setLoading(true);
@@ -63,11 +73,17 @@ const AdminAdmissions: React.FC = () => {
             return;
         }
         try {
-            const response = await axios.get(`${API_BASE_URL}/registration`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
+            const gradeQuery = selectedGrades.length > 0 
+                ? `&gradeToEnroll=${selectedGrades.join(',')}`
+                : '';
+            const response = await axios.get(
+                `${API_BASE_URL}/registration?${searchQuery ? `fileNumber=${searchQuery}` : ''}${gradeQuery}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
                 }
-            });
+            );
             setAdmissions(response.data);
         } catch (err) {
             if (axios.isAxiosError(err) && (err.response?.status === 401 || err.response?.status === 403)) {    
@@ -79,7 +95,7 @@ const AdminAdmissions: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [navigate]);
+    }, [navigate, searchQuery, selectedGrades]);
 
     useEffect(() => {
         fetchAdmissions();
@@ -234,22 +250,70 @@ const AdminAdmissions: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-4">
                 <input
                     type="text"
                     placeholder="Search by File Number"
                     value={searchQuery}
                     onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        console.log(e.target.value);
                         if (!e.target.value) {
-                            setSearchQuery("")
-                            handleSearch("")
-                            fetchAdmissions()
+                            fetchAdmissions();
+                        } else {
+                            handleSearch(e.target.value);
                         }
-                        setSearchQuery(e.target.value)
-                        handleSearch(e.target.value)
                     }}
-                    className="flex-1 p-2 border border-gray-300 rounded-md focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                    className="flex-1 p-2 border border-gray-300 rounded-md 
+                        focus:border-green-500 focus:ring-1 focus:ring-green-500 
+                        bg-green-50 text-green-700 placeholder-green-400"
                 />
+                <div className="w-96">
+                    <Select
+                        isMulti
+                        options={gradeOptions}
+                        value={gradeOptions.filter(option => selectedGrades.includes(option.value))}
+                        onChange={(selected) => {
+                            setSelectedGrades(selected ? selected.map(option => option.value) : []);
+                            fetchAdmissions();
+                        }}
+                        placeholder="Filter by Grade Level"
+                        className="text-sm"
+                        classNamePrefix="select"
+                        styles={{
+                            control: (base) => ({
+                                ...base,
+                                backgroundColor: '#F0FDF4', // Light green background
+                            }),
+                            option: (base, state) => ({
+                                ...base,
+                                color: '#059669', // Green text
+                                backgroundColor: state.isFocused ? '#D1FAE5' : 'white',
+                            }),
+                            multiValue: (base) => ({
+                                ...base,
+                                backgroundColor: '#D1FAE5', // Light green background for selected items
+                            }),
+                            multiValueLabel: (base) => ({
+                                ...base,
+                                color: '#059669', // Green text for selected items
+                            }),
+                            singleValue: (base) => ({
+                                ...base,
+                                color: '#059669', // Green text for single value
+                            })
+                        }}
+                        theme={(theme) => ({
+                            ...theme,
+                            colors: {
+                                ...theme.colors,
+                                primary: '#10B981',
+                                primary25: '#D1FAE5',
+                                neutral80: '#059669', // Dropdown text color
+                            }
+                        })}
+                    />
+                </div>
             </div>
 
             {loading && <div className="text-center">Loading...</div>}
@@ -259,7 +323,7 @@ const AdminAdmissions: React.FC = () => {
                 <AdmissionDetails admission={selectedAdmission} />
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {admissions.map((admission) => (
+                    {filteredAdmissions.map((admission) => (
                         <div 
                             key={admission.fileNumber}
                             className="bg-white p-4 rounded-lg shadow hover:shadow-md cursor-pointer relative"

@@ -51,7 +51,7 @@ const Admission = () => {
                 d="M12 4v16m8-8H4"
               />
             </svg>
-            Submit Admission
+            Pre-Registration
           </button>
         </div>
   

@@ -2,6 +2,24 @@ import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../constant/data';
 
+enum GradeLevel {
+    NURSERY = 'Nursery',
+    PRE_KINDER = 'Pre-Kinder',
+    KINDER = 'Kinder',
+    GRADE_1 = 'Grade 1',
+    GRADE_2 = 'Grade 2',
+    GRADE_3 = 'Grade 3',
+    GRADE_4 = 'Grade 4',
+    GRADE_5 = 'Grade 5',
+    GRADE_6 = 'Grade 6',
+    GRADE_7 = 'Grade 7',
+    GRADE_8 = 'Grade 8',
+    GRADE_9 = 'Grade 9',
+    GRADE_10 = 'Grade 10',
+    GRADE_11 = 'Grade 11',
+    GRADE_12 = 'Grade 12'
+}
+
 interface AdmissionFormProps {
     onClose: () => void;
 }
@@ -24,7 +42,7 @@ interface FormData {
     phoneNumber: string;
     email?: string;
     lastSchoolAttended?: string;
-    gradeToEnroll: string;
+    gradeToEnroll: GradeLevel;
     motherName: string;
     motherPhoneNumber: string;
     motherOccupation?: string;
@@ -35,12 +53,32 @@ interface FormData {
         s3Key: string;
         s3Url: string;
     };
+    reportCard?: {
+        s3Key: string;
+        s3Url: string;
+    };
+    studentType: 'new' | 'returnee';
+    previousStudentId?: string;
+    schoolYear: string;
 }
 
 interface AdmissionResponse {
     fileNumber: string;
     // ... other response fields
 }
+
+const SectionDivider: React.FC<{ title: string }> = ({ title }) => (
+    <div className="relative my-8">
+        <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-green-300"></div>
+        </div>
+        <div className="relative flex justify-start">
+            <span className="bg-white pr-4 text-lg font-semibold text-green-600">
+                {title}
+            </span>
+        </div>
+    </div>
+);
 
 const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
     const [formData, setFormData] = useState<FormData>({
@@ -61,13 +99,15 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
         phoneNumber: '',
         email: '',
         lastSchoolAttended: '',
-        gradeToEnroll: '',
+        gradeToEnroll: GradeLevel.NURSERY,
         motherName: '',
         motherPhoneNumber: '',
         motherOccupation: '',
         fatherName: '',
         fatherPhoneNumber: '',
         fatherOccupation: '',
+        studentType: 'new',
+        schoolYear: '2025-2026',
     });
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -77,17 +117,53 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
         fileNumber: '',
         show: false
     });
+    const [reportCardFile, setReportCardFile] = useState<File | null>(null);
+    const reportCardInputRef = useRef<HTMLInputElement>(null);
+
+    const inputClassName = "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-600 bg-green-600";
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        
+        if (name === 'studentType') {
+            const studentType = value as 'new' | 'returnee';
+            setFormData({
+                ...formData,
+                studentType,
+                schoolYear: studentType === 'new' ? '2025-2026' : '2024-2025'
+            });
+        } else if (name === 'birthDate') {
+            const birthDate = new Date(value);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            setFormData({
+                ...formData,
+                birthDate: value,
+                age: age
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: value
+            });
+        }
     };
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
             setSelectedFile(event.target.files[0]);
+        }
+    };
+
+    const handleReportCardSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            setReportCardFile(event.target.files[0]);
         }
     };
 
@@ -97,12 +173,23 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
         setError(null);
 
         try {
-            let imageData;
+            let imageData, reportCardData;
+            
             if (selectedFile) {
-                const formData = new FormData();
-                formData.append('image', selectedFile);
-                const uploadResponse = await axios.post(`${API_BASE_URL}/upload`, formData);
+                const pictureForm = new FormData();
+                pictureForm.append('image', selectedFile);
+                const uploadResponse = await axios.post(`${API_BASE_URL}/upload`, pictureForm);
                 imageData = {
+                    s3Key: uploadResponse.data.s3Key,
+                    s3Url: uploadResponse.data.s3Url
+                };
+            }
+
+            if (reportCardFile) {
+                const reportCardForm = new FormData();
+                reportCardForm.append('file', reportCardFile);
+                const uploadResponse = await axios.post(`${API_BASE_URL}/upload`, reportCardForm);
+                reportCardData = {
                     s3Key: uploadResponse.data.s3Key,
                     s3Url: uploadResponse.data.s3Url
                 };
@@ -110,7 +197,8 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
 
             const admissionData = {
                 ...formData,
-                picture: imageData
+                picture: imageData,
+                reportCard: reportCardData
             };
 
             const response = await axios.post<AdmissionResponse>(`${API_BASE_URL}/registration`, admissionData);
@@ -185,7 +273,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-green-600">Admission Form</h2>
+                        <h2 className="text-2xl font-bold text-green-600">Pre-Registration Form 2025-2026</h2>
                         <button
                             onClick={onClose}
                             className="text-gray-500 hover:text-gray-700"
@@ -203,7 +291,35 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Personal Information */}
+                        <div className="mb-6">
+                            <SectionDivider title="Student Type" />
+                            <div className="flex gap-4">
+                                <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="studentType"
+                                        value="new"
+                                        checked={formData.studentType === 'new'}
+                                        onChange={handleChange}
+                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                                    />
+                                    <span className="ml-2 text-gray-700">New Student</span>
+                                </label>
+                                <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="studentType"
+                                        value="returnee"
+                                        checked={formData.studentType === 'returnee'}
+                                        onChange={handleChange}
+                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                                    />
+                                    <span className="ml-2 text-gray-700">Returnee</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <SectionDivider title="Personal Information" />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">First Name *</label>
@@ -213,7 +329,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                     required
                                     value={formData.firstName}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                    className={inputClassName}
                                 />
                             </div>
                             <div>
@@ -224,7 +340,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                     required
                                     value={formData.lastName}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                    className={inputClassName}
                                 />
                             </div>
                             <div>
@@ -234,7 +350,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                     name="middleName"
                                     value={formData.middleName || ''}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                    className={inputClassName}
                                 />
                             </div>
                             <div>
@@ -245,197 +361,133 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                     required
                                     value={formData.birthDate}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                    className={inputClassName}
                                 />
                             </div>
                         </div>
 
-                        {/* Add these fields after the personal information section and before contact information */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Gender *</label>
-                                <select
-                                    name="gender"
-                                    required
-                                    value={formData.gender}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                >
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
-                                </select>
+                        <SectionDivider title="Contact Information" />
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">City *</label>
+                                    <input
+                                        type="text"
+                                        name="city"
+                                        required
+                                        value={formData.city}
+                                        onChange={handleChange}
+                                        className={inputClassName}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">State/Province *</label>
+                                    <input
+                                        type="text"
+                                        name="state"
+                                        required
+                                        value={formData.state}
+                                        onChange={handleChange}
+                                        className={inputClassName}
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Sex *</label>
-                                <select
-                                    name="sex"
-                                    required
-                                    value={formData.sex}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                >
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                </select>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Country *</label>
+                                    <input
+                                        type="text"
+                                        name="country"
+                                        required
+                                        value={formData.country}
+                                        onChange={handleChange}
+                                        className={inputClassName}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Zip Code *</label>
+                                    <input
+                                        type="text"
+                                        name="zipCode"
+                                        required
+                                        value={formData.zipCode}
+                                        onChange={handleChange}
+                                        className={inputClassName}
+                                    />
+                                </div>
                             </div>
+
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Age *</label>
-                                <input
-                                    type="number"
-                                    name="age"
+                                <label className="block text-sm font-medium text-gray-700">Address *</label>
+                                <textarea
+                                    name="address"
                                     required
-                                    min="0"
-                                    value={formData.age}
+                                    value={formData.address}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                    rows={2}
+                                    className={inputClassName}
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Contact Number *</label>
+                                    <input
+                                        type="tel"
+                                        name="phoneNumber"
+                                        required
+                                        value={formData.phoneNumber}
+                                        onChange={handleChange}
+                                        className={inputClassName}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email || ''}
+                                        onChange={handleChange}
+                                        className={inputClassName}
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Marital Status *</label>
-                                <select
-                                    name="maritalStatus"
-                                    required
-                                    value={formData.maritalStatus}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                >
-                                    <option value="single">Single</option>
-                                    <option value="married">Married</option>
-                                    <option value="divorced">Divorced</option>
-                                    <option value="widowed">Widowed</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Birth Place *</label>
-                                <input
-                                    type="text"
-                                    name="birthPlace"
-                                    required
-                                    value={formData.birthPlace}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Add address details section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">City *</label>
-                                <input
-                                    type="text"
-                                    name="city"
-                                    required
-                                    value={formData.city}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">State/Province *</label>
-                                <input
-                                    type="text"
-                                    name="state"
-                                    required
-                                    value={formData.state}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                />
+                        <SectionDivider title="Educational Information" />
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">School Year *</label>
+                                    <input
+                                        type="text"
+                                        name="schoolYear"
+                                        value={formData.schoolYear}
+                                        readOnly
+                                        className={`${inputClassName} bg-gray-50`}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Grade Level to Enroll *</label>
+                                    <select
+                                        name="gradeToEnroll"
+                                        required
+                                        value={formData.gradeToEnroll}
+                                        onChange={handleChange}
+                                        className={inputClassName}
+                                    >
+                                        {Object.values(GradeLevel).map((grade) => (
+                                            <option key={grade} value={grade}>
+                                                {grade}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Country *</label>
-                                <input
-                                    type="text"
-                                    name="country"
-                                    required
-                                    value={formData.country}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Zip Code *</label>
-                                <input
-                                    type="text"
-                                    name="zipCode"
-                                    required
-                                    value={formData.zipCode}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Contact Information */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Address *</label>
-                            <textarea
-                                name="address"
-                                required
-                                value={formData.address}
-                                onChange={handleChange}
-                                rows={2}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Contact Number *</label>
-                                <input
-                                    type="tel"
-                                    name="phoneNumber"
-                                    required
-                                    value={formData.phoneNumber}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Email</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email || ''}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Educational Information */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Last School Attended</label>
-                                <input
-                                    type="text"
-                                    name="lastSchoolAttended"
-                                    value={formData.lastSchoolAttended || ''}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Grade to Enroll *</label>
-                                <input
-                                    type="text"
-                                    name="gradeToEnroll"
-                                    required
-                                    value={formData.gradeToEnroll}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Parent Information */}
+                        <SectionDivider title="Parent Information" />
                         <div className="space-y-6">
                             <h3 className="text-lg font-medium text-gray-900">Mother's Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -447,7 +499,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                         required
                                         value={formData.motherName}
                                         onChange={handleChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        className={inputClassName}
                                     />
                                 </div>
                                 <div>
@@ -458,7 +510,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                         required
                                         value={formData.motherPhoneNumber}
                                         onChange={handleChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        className={inputClassName}
                                     />
                                 </div>
                                 <div className="md:col-span-2">
@@ -468,7 +520,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                         name="motherOccupation"
                                         value={formData.motherOccupation || ''}
                                         onChange={handleChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        className={inputClassName}
                                     />
                                 </div>
                             </div>
@@ -483,7 +535,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                         required
                                         value={formData.fatherName}
                                         onChange={handleChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        className={inputClassName}
                                     />
                                 </div>
                                 <div>
@@ -494,7 +546,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                         required
                                         value={formData.fatherPhoneNumber}
                                         onChange={handleChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        className={inputClassName}
                                     />
                                 </div>
                                 <div className="md:col-span-2">
@@ -504,28 +556,52 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                         name="fatherOccupation"
                                         value={formData.fatherOccupation || ''}
                                         onChange={handleChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                        className={inputClassName}
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Requirements Upload */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Requirements (2x2 Picture) *</label>
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleFileSelect}
-                                accept="image/*"
-                                required
-                                className="mt-1 block w-full text-sm text-gray-500
-                                    file:mr-4 file:py-2 file:px-4
-                                    file:rounded-full file:border-0
-                                    file:text-sm file:font-semibold
-                                    file:bg-green-50 file:text-green-700
-                                    hover:file:bg-green-100"
-                            />
+                        <SectionDivider title="Requirements" />
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Requirements (2x2 Picture) *</label>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileSelect}
+                                    accept="image/*"
+                                    required
+                                    className="mt-1 block w-full text-sm text-gray-500 bg-green-50
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-full file:border-0
+                                        file:text-sm file:font-semibold
+                                        file:bg-green-100 file:text-green-700
+                                        hover:file:bg-green-200"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Report Card (PDF) *</label>
+                                <input
+                                    type="file"
+                                    ref={reportCardInputRef}
+                                    onChange={handleReportCardSelect}
+                                    accept=".pdf"
+                                    required
+                                    className="mt-1 block w-full text-sm text-gray-500 bg-green-50
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-full file:border-0
+                                        file:text-sm file:font-semibold
+                                        file:bg-green-100 file:text-green-700
+                                        hover:file:bg-green-200"
+                                />
+                                {reportCardFile && (
+                                    <p className="mt-2 text-sm text-green-600">
+                                        Selected file: {reportCardFile.name}
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex justify-end space-x-3">

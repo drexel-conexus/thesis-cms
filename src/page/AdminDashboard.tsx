@@ -10,7 +10,7 @@ import AdminAdmissions from '../component/AdminAdmissions';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'announcements' | 'events' | 'user' | 'home' | 'admissions'>('announcements');
+  const [activeTab, setActiveTab] = useState<'announcements' | 'events' | 'user' | 'home' | 'pre-registration'>('announcements');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -27,7 +27,7 @@ const AdminDashboard: React.FC = () => {
         return <Users users={dashboardData.users} />;
       case 'home':
         return <Home />;
-      case 'admissions':
+      case 'pre-registration':
         return <AdminAdmissions />;
       default:
         return null;
@@ -41,7 +41,7 @@ const AdminDashboard: React.FC = () => {
         <div className="p-4 flex-grow">
           <h2 className="text-2xl font-bold text-green-700 mb-4">Dashboard</h2>
           <nav>
-            {['announcements', 'events', 'user', 'home', 'admissions'].map((tab) => (
+            {['announcements', 'events', 'user', 'home', 'pre-registration'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as typeof activeTab)}
