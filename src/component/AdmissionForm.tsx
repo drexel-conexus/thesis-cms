@@ -206,6 +206,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                 fileNumber: response.data.fileNumber,
                 show: true
             });
+            onClose();
         } catch (err) {
             console.error('Error submitting admission:', err);
             setError('Failed to submit admission. Please try again.');
