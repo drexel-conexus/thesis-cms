@@ -7,11 +7,12 @@ import AnnouncementModal from '../component/AnnouncementModal';
 import EventModal from '../component/EventModal';
 import { SchoolCalendar } from '../component/Calendar';
 import Admission from '../component/Admission';
-import { Box, Typography, Paper, Divider } from '@mui/material';
 import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 import facultyData from '../assets/faculty.json';
+import Mission from '../component/Mission';
+import CoreValues from '../component/CoreValues';
 
 // Update ActiveSection type
 type ActiveSection = 'home' | 'calendar' | 'mission' | 'core-values' | 'faculty' | 'admission' | 'announcements' | 'history'
@@ -478,71 +479,12 @@ const HomePage: React.FC = () => {
 
             case 'mission':
                 return (
-                    <Box className="bg-gray-700 bg-opacity-50 p-6 rounded-lg">
-                        <Typography variant="h3" className="mb-6 text-green-500 font-bold text-center">
-                            {missionData.Title}
-                        </Typography>
-                        
-                        <Paper elevation={3} className="p-8">
-                            <Box className="space-y-8">
-                                <Box>
-                                    <Typography variant="h4" className="text-green-700 font-semibold mb-4">
-                                        Mission
-                                    </Typography>
-                                    <Typography variant="h6" className="text-gray-700 leading-relaxed">
-                                        {missionData.Content.split('\n')[0]}
-                                    </Typography>
-                                </Box>
-
-                                <Divider />
-
-                                <Box>
-                                    <Typography variant="h4" className="text-green-700 font-semibold mb-4">
-                                        Vision
-                                    </Typography>
-                                    <Typography variant="h6" className="text-gray-700 leading-relaxed">
-                                        {missionData.Content.split('\n')[1]}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Paper>
-                    </Box>
+                    <Mission />
                 );
 
             case 'core-values':
                 return (
-                    <Box className="bg-gray-700 bg-opacity-50 p-6 rounded-lg">
-                        <Typography variant="h3" className="mb-6 text-green-500 font-bold text-center">
-                            {coreValuesData.Title}
-                        </Typography>
-                        
-                        <Paper elevation={3} className="p-8">
-                            <Typography variant="h4" className="text-center mb-6 text-green-700 font-semibold">
-                                {coreValuesData.Subtitle}
-                            </Typography>
-                            
-                            <Divider className="my-6" />
-                            
-                            <Box className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                                {['Veritas', 'Unitas', 'Caritas'].map((value) => (
-                                    <Paper key={value} elevation={2} className="p-6 text-center bg-green-50">
-                                        <Typography variant="h4" className="text-green-700 font-bold mb-3">
-                                            {value}
-                                        </Typography>
-                                        <Typography variant="h5" className="text-gray-600">
-                                            {value === 'Veritas' && 'Truth'}
-                                            {value === 'Unitas' && 'Unity'}
-                                            {value === 'Caritas' && 'Love'}
-                                        </Typography>
-                                    </Paper>
-                                ))}
-                            </Box>
-
-                            <Typography variant="h6" className="text-gray-700 leading-relaxed text-center">
-                                {coreValuesData.Content}
-                            </Typography>
-                        </Paper>
-                    </Box>
+                    <CoreValues />
                 );
 
             case 'faculty':
