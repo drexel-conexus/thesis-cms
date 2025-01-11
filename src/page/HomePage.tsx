@@ -51,7 +51,7 @@ const HomePage: React.FC = () => {
         const fetchAnnouncements = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`${API_BASE_URL}/announcements`);
+                const response = await axios.get(`${API_BASE_URL}/announcements/web`);
                 setAnnouncements(response.data);
                 setError(null);
             } catch (err) {
@@ -69,7 +69,7 @@ const HomePage: React.FC = () => {
         const fetchEvents = async () => {
             try {
                 setEventsLoading(true);
-                const res = await axios.get(`${API_BASE_URL}/events`);
+                const res = await axios.get(`${API_BASE_URL}/events/web/current-month`);
                 setEvents(res.data);
                 setEventsError(null);
             } catch (err) {

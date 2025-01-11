@@ -31,7 +31,7 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
       try {
           setLoading(true);
           const query = month ? `?month=${month}` : '';
-          const { data } = await axios.get(`${API_BASE_URL}/events/current-month${query}`);
+          const { data } = await axios.get(`${API_BASE_URL}/events/web/current-month${query}`);
           console.log(data);
           const parsedEvents: Event[] = data;
           
