@@ -11,8 +11,13 @@ import axios from 'axios';
 import UserProfile from '../component/UserProfile';
 
 interface UserData {
+  _id: string;
   firstName: string;
   userType: string;
+  image?: {
+    s3key: string;
+    s3Url: string;
+  };
 }
 
 const AdminDashboard: React.FC = () => {
@@ -70,14 +75,24 @@ const AdminDashboard: React.FC = () => {
           {/* User Profile Section at Top */}
           <div className="mb-6 pb-4 border-b border-gray-200">
             <div className="flex items-center space-x-3 mb-3">
-              <div className="bg-green-100 rounded-full p-2">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+              <div className="bg-green-100 rounded-full p-2 w-12 h-12 flex items-center justify-center overflow-hidden">
+                {userData?.image?.s3Url ? (
+                  <img
+                    src={userData.image.s3Url}
+                    alt={`${userData.firstName}'s profile`}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.firstName || 'User'}`}
+                    alt="User avatar"
+                    className="w-full h-full rounded-full"
+                  />
+                )}
               </div>
               <button
                 onClick={() => setActiveTab('profile')}
-                className="text-left hover:text-green-600"
+                className="text-left hover:text-green-600 flex-1"
               >
                 <div className="font-medium text-gray-900">@{userData?.firstName || 'User'}</div>
                 <div className="text-sm text-gray-500">{userData?.userType || 'Loading...'}</div>
