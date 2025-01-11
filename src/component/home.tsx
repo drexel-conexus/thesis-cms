@@ -4,6 +4,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '../constant/data';
 // Import icon from react-icons
 import { IoAddCircleOutline, IoCloseCircleOutline, IoTrashOutline } from "react-icons/io5";
+import { FaSpinner } from 'react-icons/fa';
 
 interface Image {
   _id: string;
@@ -66,30 +67,25 @@ const Home: React.FC = () => {
     setError(null);
 
     try {
-      // First upload the file
       const formData = new FormData();
       formData.append('image', selectedFile);
       
       const uploadResponse = await axios.post(`${API_BASE_URL}/upload`, formData);
       
-      // Create the new image object
       const newImage = {
         s3Key: uploadResponse.data.s3Key,
         s3Url: uploadResponse.data.s3Url,
         title: imageTitle || undefined,
       };
 
-      // Update the home assets with the new image
       const response = await axios.patch(`${API_BASE_URL}/asset/${data?._id}`, {
         images: [newImage, ...data?.images || []]
       });
 
-      // Update local state with the new data
       if (response.data) {
         await fetchImages(); // Refresh the data from server
       }
       
-      // Reset form and close modal
       setSelectedFile(null);
       setImageTitle('');
       if (fileInputRef.current) {
@@ -105,10 +101,8 @@ const Home: React.FC = () => {
     }
   };
 
-  // Add function to handle form visibility
   const toggleUploadForm = () => {
     setShowUploadForm(!showUploadForm);
-    // Reset form when closing
     if (showUploadForm) {
       setSelectedFile(null);
       setImageTitle('');
@@ -118,12 +112,10 @@ const Home: React.FC = () => {
     }
   };
 
-  // Modify the delete handler to show confirmation first
   const handleDeleteClick = (s3Key: string) => {
     setDeleteConfirmation({ show: true, s3Key });
   };
 
-  // Add confirmation handler
   const handleConfirmDelete = async () => {
     const s3Key = deleteConfirmation.s3Key;
     if (!s3Key || !data?._id) return;
@@ -131,20 +123,17 @@ const Home: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Delete from S3
       try {
         await axios.delete(`${API_BASE_URL}/upload/delete?s3Key=${s3Key}`);
       } catch (err) {
         console.log(err);
       }
       
-      // Update the assets by removing the deleted image
       const updatedImages = data.images.filter(img => img.s3Key !== s3Key);
       await axios.patch(`${API_BASE_URL}/asset/${data._id}`, {
         images: updatedImages
       });
 
-      // Refresh the images
       await fetchImages();
       
     } catch (err) {
@@ -157,25 +146,94 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Add Title */}
-      <h1 className="text-2xl font-bold text-green-600">Home Assets</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900">
+          <span className="text-green-600">Home</span> Assets
+        </h1>
+        <button
+          onClick={toggleUploadForm}
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+        >
+          <IoAddCircleOutline className="-ml-1 mr-2 h-5 w-5" />
+          Upload Image
+        </button>
+      </div>
 
+      {/* Error Alert */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <span className="block sm:inline">{error}</span>
+        <div className="rounded-md bg-red-50 p-4 border-l-4 border-red-500">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Upload Icon Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={toggleUploadForm}
-          className="flex items-center gap-2 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
-        >
-          <IoAddCircleOutline />
-          Upload Image
-        </button>
+      {/* Image Gallery Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">Image Gallery</h2>
+        </div>
+        
+        <div className="p-6">
+          {isLoading && images.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <FaSpinner className="w-8 h-8 text-green-500 animate-spin mb-4" />
+              <p className="text-sm text-gray-500">Loading images...</p>
+            </div>
+          ) : images.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="rounded-full bg-gray-100 p-3 mb-4">
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p className="text-gray-500 text-sm">No images uploaded yet</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {images.map((image) => (
+                <div 
+                  key={image.s3Key} 
+                  className="group bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
+                >
+                  <div className="relative">
+                    <div className="aspect-w-16 aspect-h-9">
+                      <img
+                        src={image.s3Url}
+                        alt={image.title || 'Uploaded image'}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <button
+                      onClick={() => handleDeleteClick(image.s3Key)}
+                      className="absolute top-2 right-2 p-2 bg-white bg-opacity-90 rounded-full shadow-md hover:bg-red-50 transition-colors duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      title="Delete image"
+                    >
+                      <IoTrashOutline className="w-4 h-4 text-red-500" />
+                    </button>
+                  </div>
+                  
+                  {image.title && (
+                    <div className="p-4">
+                      <h3 className="font-medium text-gray-900 truncate group-hover:text-green-600 transition-colors duration-200">
+                        {image.title}
+                      </h3>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Upload Section */}
@@ -257,48 +315,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Image Gallery */}
-      <div className="bg-white p-6 rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Image Gallery</h2>
-        {isLoading && images.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">Loading images...</p>
-        ) : images.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No images uploaded yet</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {images.map((image) => (
-              <div 
-                key={image.s3Key} 
-                className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 relative"
-              >
-                <button
-                  onClick={() => handleDeleteClick(image.s3Key)}
-                  className="absolute top-2 right-2 z-10 bg-red-500 text-white p-2 rounded-full transition-colors duration-200 hover:bg-red-600 shadow-md"
-                  title="Delete image"
-                >
-                  <IoTrashOutline size={18} />
-                </button>
-
-                <div className="aspect-w-16 aspect-h-9 w-full h-64 relative">
-                  <img
-                    src={image.s3Url}
-                    alt={image.title || 'Uploaded image'}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                </div>
-                {image.title && (
-                  <div className="p-4 bg-white">
-                    <h3 className="font-semibold text-lg text-gray-800 truncate">
-                      {image.title}
-                    </h3>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 };
