@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import AdmissionForm from './AdmissionForm';
 
 const Admission: React.FC = () => {
@@ -212,16 +212,65 @@ const Admission: React.FC = () => {
         >
           <button
             onClick={() => setShowForm(true)}
-            className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 text-lg font-semibold shadow-lg hover:shadow-xl"
+            className="group relative px-8 py-4 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg 
+              hover:from-green-500 hover:to-green-400 transition-all duration-300 
+              transform hover:scale-105 text-lg font-semibold shadow-lg hover:shadow-2xl"
           >
-            Start Pre-Registration
+            <span className="flex items-center justify-center">
+              <svg 
+                className="w-6 h-6 mr-2 group-hover:animate-bounce" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+                />
+              </svg>
+              Start Pre-Registration
+            </span>
+            <div className="absolute inset-0 rounded-lg overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-white to-white opacity-0 group-hover:opacity-20 transform translate-y-full group-hover:translate-y-0 transition-all duration-300"></div>
+            </div>
           </button>
         </motion.div>
 
         {/* Modal Form */}
-        {showForm && (
-                <AdmissionForm onClose={() => setShowForm(false)} />
-        )}
+        <AnimatePresence>
+          {showForm && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 overflow-y-auto"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setShowForm(false);
+                }
+              }}
+            >
+              <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity" />
+              <div className="flex min-h-full items-center justify-center p-4">
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all w-full max-w-4xl"
+                >
+                  <AdmissionForm onClose={() => setShowForm(false)} />
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Decorative Elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-green-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute bottom-0 left-1/2 w-64 h-64 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+        </div>
       </div>
     </div>
   );
