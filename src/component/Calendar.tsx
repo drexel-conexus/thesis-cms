@@ -62,7 +62,7 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
             const isSameMonth = eventDate.getMonth() === currentMonth.getMonth();
             const isSameYear = eventDate.getFullYear() === currentMonth.getFullYear();
             return isSameMonth && isSameYear;
-        }).sort((a, b) => a.date.getTime() - b.date.getTime());
+        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     };
 
     const tileContent = ({ date, view }: { date: Date; view: string }) => {
@@ -76,8 +76,11 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
             });
             
             return dayEvents.length > 0 ? (
-                <div className="text-xs text-green-600">
-                    {dayEvents.length} event(s)
+                <div className="flex flex-col items-center">
+                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 mb-1"></div>
+                    <div className="text-xs font-medium text-green-700">
+                        {dayEvents.length > 1 ? `${dayEvents.length} events` : '1 event'}
+                    </div>
                 </div>
             ) : null;
         }
@@ -89,7 +92,10 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
         return (
             <div className="container mx-auto px-4 py-8">
                 <div className="bg-gradient-to-br from-green-50 to-white rounded-lg shadow-lg p-6 border border-green-100">
-                    <div className="text-center py-8 text-gray-500">Loading calendar events...</div>
+                    <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                        <span className="ml-3 text-gray-600">Loading calendar events...</span>
+                    </div>
                 </div>
             </div>
         );
@@ -97,39 +103,45 @@ export const SchoolCalendar: React.FC<SchoolCalendarProps> = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <div className="bg-gradient-to-br from-green-50 to-white rounded-lg shadow-lg p-6 border border-green-100">
-                <h2 className="text-3xl font-bold text-green-600 mb-8 text-center">School Calendar</h2>
+            <div className="bg-gradient-to-br from-green-50 to-white rounded-lg shadow-xl p-8 border border-green-100">
+                <h2 className="text-3xl font-bold text-green-700 mb-8 text-center">
+                    School Calendar
+                </h2>
                 
-                <div className="flex flex-col lg:flex-row gap-8">
-                    <div className="lg:w-[450px]">
-                        <Calendar
-                            onChange={(value) => {
-                                if (value instanceof Date) {
-                                    setCurrentMonth(value);
-                                } else if (Array.isArray(value) && value[0] instanceof Date) {
-                                    setCurrentMonth(value[0]);
-                                }
-                            }}
-                            value={currentMonth}
-                            tileContent={tileContent}
-                            className="rounded-lg border-none w-full"
-                            view="month"
-                            onClickDay={(_, event) => {
-                                event.preventDefault();
-                            }}
-                            onActiveStartDateChange={({ activeStartDate }) => {
-                                if (activeStartDate) {
-                                    setCurrentMonth(activeStartDate);
-                                }
-                            }}
-                        />
+                <div className="flex flex-col lg:flex-row gap-10">
+                    <div className="lg:w-[500px]">
+                        <div className="p-4 bg-white rounded-xl shadow-md">
+                            <Calendar
+                                onChange={(value) => {
+                                    if (value instanceof Date) {
+                                        setCurrentMonth(value);
+                                    } else if (Array.isArray(value) && value[0] instanceof Date) {
+                                        setCurrentMonth(value[0]);
+                                    }
+                                }}
+                                value={currentMonth}
+                                tileContent={tileContent}
+                                className="rounded-lg border-none w-full"
+                                view="month"
+                                onClickDay={(_, event) => {
+                                    event.preventDefault();
+                                }}
+                                onActiveStartDateChange={({ activeStartDate }) => {
+                                    if (activeStartDate) {
+                                        setCurrentMonth(activeStartDate);
+                                    }
+                                }}
+                            />
+                        </div>
                     </div>
                     
                     <div className="flex-1">
-                        <h3 className="text-xl font-semibold mb-6 text-green-700 border-b-2 border-green-200 pb-2">
-                            Events for {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                        </h3>
-                        <EventsList events={monthEvents} loading={loading} />
+                        <div className="bg-white rounded-xl shadow-md p-6">
+                            <h3 className="text-2xl font-semibold mb-6 text-green-700 border-b-2 border-green-200 pb-3">
+                                Events for {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                            </h3>
+                            <EventsList events={monthEvents} loading={loading} />
+                        </div>
                     </div>
                 </div>
             </div>

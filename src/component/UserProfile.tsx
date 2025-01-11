@@ -39,6 +39,7 @@ const UserProfile: React.FC = () => {
 
         setUserData(response.data);
       } catch (err) {
+        console.log(err);
         if (axios.isAxiosError(err) && (err.response?.status === 401 || err.response?.status === 403)) {
           localStorage.removeItem('token');
           window.location.href = '/login';
@@ -137,7 +138,7 @@ const UserProfile: React.FC = () => {
               <h3 className="text-2xl font-bold text-white mb-1">
                 {`${userData.firstName} ${userData.lastName}`}
               </h3>
-              <p className="text-green-100 text-lg">@{userData.email.split('@')[0]}</p>
+              <p className="text-green-100 text-lg">@{userData?.email?.split('@')[0]}</p>
             </div>
           </div>
         </div>

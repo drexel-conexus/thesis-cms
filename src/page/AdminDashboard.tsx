@@ -36,7 +36,12 @@ const AdminDashboard: React.FC = () => {
         });
         setUserData(response.data);
       } catch (err) {
-        console.error('Failed to fetch user data:', err);
+        if (axios.isAxiosError(err) && (err.response?.status === 401 || err.response?.status === 403)) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        } else {
+          console.error(err);
+        }
       }
     };
 
