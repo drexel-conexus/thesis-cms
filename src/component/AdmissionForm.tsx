@@ -182,7 +182,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
 
             const admissionData = {
                 ...formData,
-                picture: imageData,
+                image: imageData,
                 reportCard: reportCardData
             };
 

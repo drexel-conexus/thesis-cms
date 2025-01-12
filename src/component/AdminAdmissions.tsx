@@ -34,7 +34,7 @@ interface Admission {
     fatherName: string;
     fatherPhoneNumber: string;
     fatherOccupation?: string;
-    picture?: {
+    image?: {
         s3Key: string;
         s3Url: string;
     };
@@ -183,35 +183,45 @@ const AdminAdmissions: React.FC = () => {
 
     const downloadFile = async (url: string, filename: string) => {
         try {
-            const response = await fetch(url);
-            const contentType = response.headers.get('content-type');
-            const blob = await response.blob();
-            
+            const response = await axios({
+                url,
+                method: 'GET',
+                responseType: 'blob',
+            });
+
+            const contentType = response.headers['content-type'];
+            const blob = new Blob([response.data], { type: contentType });
+
             // Determine correct file extension based on content type
             let extension = '';
             if (contentType) {
                 const contentTypeLower = contentType.toLowerCase();
-                if (contentTypeLower === 'image/jpeg' || contentTypeLower === 'image/jpg') {
-                    extension = '.jpg';
-                } else if (contentTypeLower === 'image/png') {
-                    extension = '.png';
-                } else if (contentTypeLower === 'image/gif') {
-                    extension = '.gif';
-                } else if (contentTypeLower === 'application/pdf') {
-                    extension = '.pdf';
-                } else {
-                    const urlExtension = url.split('.').pop()?.toLowerCase();
-                    if (urlExtension) {
-                        extension = `.${urlExtension}`;
+                switch (contentTypeLower) {
+                    case 'image/jpeg':
+                    case 'image/jpg':
+                        extension = '.jpg';
+                        break;
+                    case 'image/png':
+                        extension = '.png';
+                        break;
+                    case 'image/gif':
+                        extension = '.gif';
+                        break;
+                    case 'application/pdf':
+                        extension = '.pdf';
+                        break;
+                    default: {
+                        const urlExtension = url.split('.').pop()?.toLowerCase();
+                        if (urlExtension) {
+                            extension = `.${urlExtension}`;
+                        }
+                        break;
                     }
                 }
             }
 
-            // Create a new blob with the correct type
-            const fileBlob = new Blob([blob], { type: contentType || 'application/octet-stream' });
-            const downloadUrl = window.URL.createObjectURL(fileBlob);
-            
-            // Ensure filename has correct extension
+            // Create download URL and trigger download
+            const downloadUrl = window.URL.createObjectURL(blob);
             const finalFilename = filename.includes('.')
                 ? filename
                 : `${filename}${extension}`;
@@ -221,12 +231,19 @@ const AdminAdmissions: React.FC = () => {
             link.download = finalFilename;
             document.body.appendChild(link);
             link.click();
+            
+            // Cleanup
             document.body.removeChild(link);
             window.URL.revokeObjectURL(downloadUrl);
         } catch (error) {
             console.error('Download failed:', error);
-            // You might want to show an error message to the user
-            alert('Failed to download file. Please try again.');
+            if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+                // Handle unauthorized access
+                alert('Session expired. Please login again.');
+                // You might want to redirect to login page here
+            } else {
+                alert('Failed to download file. Please try again.');
+            }
         }
     };
 
@@ -291,13 +308,13 @@ const AdminAdmissions: React.FC = () => {
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                {admission.picture && (
+                {admission.image && (
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="flex justify-between items-center mb-3">
                             <h4 className="font-semibold text-green-600">2x2 Picture</h4>
                             <button
                                 onClick={() => downloadFile(
-                                    admission.picture!.s3Url,
+                                    admission.image!.s3Url,
                                     `${admission.fileNumber}_picture`  // Remove extension, let function handle it
                                 )}
                                 className="inline-flex items-center px-3 py-1.5 bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition-colors duration-200"
@@ -308,7 +325,7 @@ const AdminAdmissions: React.FC = () => {
                         </div>
                         <div className="relative group">
                             <img 
-                                src={admission.picture.s3Url} 
+                                src={admission.image!.s3Url} 
                                 alt="Student" 
                                 className="w-full h-48 object-contain rounded-md border border-gray-200"
                             />
@@ -553,7 +570,7 @@ const AdminAdmissions: React.FC = () => {
                                         </div>
                                         
                                         <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                            {admission.picture && (
+                                            {admission.image && (
                                                 <div className="flex items-center">
                                                     <FaUser className="w-3 h-3 mr-1 text-green-500" />
                                                     <span>Picture</span>
