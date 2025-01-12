@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../constant/data';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import { GradeLevel } from '../constant/type';
-import { FaSearch, FaSpinner, FaTrash, FaTimes, FaGraduationCap, FaUser, FaPhone, FaEnvelope, FaMapMarkerAlt, FaDownload, FaFileAlt } from 'react-icons/fa';
+import { FaSearch, FaSpinner, FaTrash, FaTimes, FaGraduationCap, FaUser, FaPhone, FaDownload, FaFileAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Admission {

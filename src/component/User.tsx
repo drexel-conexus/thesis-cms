@@ -1,6 +1,6 @@
 // Users.tsx
 import React, { useEffect, useState, useCallback } from 'react';
-import { User } from '../constant/type';
+import { User, UserType } from '../constant/type';
 import { API_BASE_URL } from '../constant/data';
 import axios from 'axios';
 import UserForm from './UserForm';
@@ -233,8 +233,8 @@ const Users: React.FC<UsersProps> = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        ${user.userType === 'admin' ? 'bg-purple-100 text-purple-800' : 
-                          user.userType === 'staff' ? 'bg-blue-100 text-blue-800' : 
+                        ${user.userType === UserType.ADMIN || user.userType === UserType.SU ? 'bg-purple-100 text-purple-800' : 
+                          user.userType === UserType.USER ? 'bg-blue-100 text-blue-800' : 
                           'bg-green-100 text-green-800'}`}>
                         {user.userType}
                       </span>

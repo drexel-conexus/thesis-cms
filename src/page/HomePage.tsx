@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../assets/style.css'; 
-import { API_BASE_URL, coreValuesData, missionData } from '../constant/data';
+import { API_BASE_URL } from '../constant/data';
 import { Announcement, Event } from '../constant/type';
 import AnnouncementModal from '../component/AnnouncementModal';
 import EventModal from '../component/EventModal';
@@ -705,7 +705,7 @@ const HomePage: React.FC = () => {
                                                         </svg>
                                                     </div>
                                                     <span className="text-xs text-gray-500">
-                                                        {new Date(announcement.createdAt).toLocaleDateString()}
+                                                        {new Date(announcement.endDate).toLocaleDateString()}
                                                     </span>
                                                 </div>
                                             </div>

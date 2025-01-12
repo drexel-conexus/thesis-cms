@@ -22,7 +22,6 @@ const UserProfile: React.FC = () => {
   const [showChangePassword, setShowChangePassword] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
