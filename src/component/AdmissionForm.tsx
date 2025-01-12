@@ -1,24 +1,7 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../constant/data';
-
-enum GradeLevel {
-    NURSERY = 'Nursery',
-    PRE_KINDER = 'Pre-Kinder',
-    KINDER = 'Kinder',
-    GRADE_1 = 'Grade 1',
-    GRADE_2 = 'Grade 2',
-    GRADE_3 = 'Grade 3',
-    GRADE_4 = 'Grade 4',
-    GRADE_5 = 'Grade 5',
-    GRADE_6 = 'Grade 6',
-    GRADE_7 = 'Grade 7',
-    GRADE_8 = 'Grade 8',
-    GRADE_9 = 'Grade 9',
-    GRADE_10 = 'Grade 10',
-    GRADE_11 = 'Grade 11',
-    GRADE_12 = 'Grade 12'
-}
+import { GradeLevel } from '../constant/type';
 
 interface AdmissionFormProps {
     onClose: () => void;
@@ -178,6 +161,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
             if (selectedFile) {
                 const pictureForm = new FormData();
                 pictureForm.append('image', selectedFile);
+                pictureForm.append('fileType', 'image');
                 const uploadResponse = await axios.post(`${API_BASE_URL}/upload`, pictureForm);
                 imageData = {
                     s3Key: uploadResponse.data.s3Key,
@@ -188,6 +172,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
             if (reportCardFile) {
                 const reportCardForm = new FormData();
                 reportCardForm.append('file', reportCardFile);
+                reportCardForm.append('fileType', 'file');
                 const uploadResponse = await axios.post(`${API_BASE_URL}/upload`, reportCardForm);
                 reportCardData = {
                     s3Key: uploadResponse.data.s3Key,
@@ -480,7 +465,7 @@ const AdmissionForm: React.FC<AdmissionFormProps> = ({ onClose }) => {
                                     >
                                         {Object.values(GradeLevel).map((grade) => (
                                             <option key={grade} value={grade}>
-                                                {grade}
+                                                {grade.charAt(0).toUpperCase() + grade.slice(1)}
                                             </option>
                                         ))}
                                     </select>
