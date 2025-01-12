@@ -69,7 +69,7 @@ const Home: React.FC = () => {
     try {
       const formData = new FormData();
       formData.append('image', selectedFile);
-      
+      formData.append('fileType', 'image');
       const uploadResponse = await axios.post(`${API_BASE_URL}/upload`, formData);
       
       const newImage = {

@@ -40,6 +40,7 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchAnnouncements = useCallback(async () => {
     setIsLoading(true);
@@ -74,9 +75,9 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
   }, [fetchAnnouncements]);
 
   const handleAddAnnouncement = async (announcementData: Omit<Announcement, '_id'>) => {
+    setIsSubmitting(true);
     try {
       let image = announcementData.image;
-      console.log(announcementData.file);
       const token = localStorage.getItem('token');
       if (!token) {
         navigate('/login');
@@ -85,6 +86,7 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
       if (announcementData.file) {
         const formData = new FormData();
         formData.append('image', announcementData.file);
+        formData.append('fileType', 'image');
         const res = await axios.post(`${API_BASE_URL}/upload`, formData, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -93,39 +95,56 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
         if (res) {
           image = {
             s3key: res.data.s3key,
-          s3Url: res.data.s3Url,
+            s3Url: res.data.s3Url,
           }
         }
       }
 
-      const response = await axios.post<Announcement>(`${API_BASE_URL}/announcements`, {...announcementData, image}, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await axios.post<Announcement>(
+        `${API_BASE_URL}/announcements`, 
+        {...announcementData, image}, 
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         }
-      });
+      );
       setAnnouncements([...announcements, response.data]);
+      setIsFormOpen(false);
     } catch (error) {
       console.error('Error adding announcement:', error);
       setError('Failed to add announcement. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleEditAnnouncement = async (announcementId: string, announcementData: Omit<Announcement, '_id'>) => {
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         navigate('/login');
         return;
       }
-      const response = await axios.patch<Announcement>(`${API_BASE_URL}/announcements/${announcementId}`, announcementData, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await axios.patch<Announcement>(
+        `${API_BASE_URL}/announcements/${announcementId}`, 
+        announcementData, 
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         }
-      });
-      setAnnouncements(announcements.map(announcement => announcement._id === announcementId ? response.data : announcement));
+      );
+      setAnnouncements(announcements.map(announcement => 
+        announcement._id === announcementId ? response.data : announcement
+      ));
+      setIsFormOpen(false);
     } catch (error) {
       console.error('Error updating announcement:', error);
       setError('Failed to update announcement. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -164,7 +183,6 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
     } else {
       handleAddAnnouncement(announcementData);
     }
-    setIsFormOpen(false);
   };
 
   const handleFormCancel = () => {
@@ -202,12 +220,15 @@ const Announcements: React.FC<AnnouncementsProps> = () => {
       </div>
 
       {isFormOpen && (
-        <div className="mb-8">  
-          <AnnouncementForm  
-            announcement={editingAnnouncement || undefined}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-transparent rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <AnnouncementForm  
+              announcement={editingAnnouncement || undefined}
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormCancel}
+              isSubmitting={isSubmitting}
+            />
+          </div>
         </div>
       )}
 

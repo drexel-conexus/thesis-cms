@@ -40,6 +40,7 @@ const Events: React.FC<EventsProps> = () => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const fetchEvents = useCallback(async () => {
@@ -74,9 +75,9 @@ const Events: React.FC<EventsProps> = () => {
   }, [fetchEvents]);
 
   const handleAddEvent = async (eventData: Omit<Event, '_id'>) => {
+    setIsSubmitting(true);
     try {
       let image = eventData.image;
-      console.log(eventData.file);
       const token = localStorage.getItem('token');
       if (!token) {
         navigate('/login');
@@ -85,6 +86,7 @@ const Events: React.FC<EventsProps> = () => {
       if (eventData.file) {
         const formData = new FormData();
         formData.append('image', eventData.file);
+        formData.append('fileType', 'image');
         const res = await axios.post(`${API_BASE_URL}/upload`, formData, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -93,16 +95,21 @@ const Events: React.FC<EventsProps> = () => {
         if (res) {
           image = {
             s3key: res.data.s3key,
-          s3Url: res.data.s3Url,
+            s3Url: res.data.s3Url,
           }
         }
       }
-      const response = await axios.post<Event>(`${API_BASE_URL}/events`, {...eventData, image}, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await axios.post<Event>(
+        `${API_BASE_URL}/events`, 
+        {...eventData, image}, 
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         }
-      });
+      );
       setEvents([...events, response.data]);
+      setIsFormOpen(false);
     } catch (error) {
       if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
         navigate('/login');
@@ -110,25 +117,35 @@ const Events: React.FC<EventsProps> = () => {
         console.error('Error adding event:', error);
         setError('Failed to add event. Please try again.');
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleEditEvent = async (eventId: string, eventData: Omit<Event, '_id'>) => {
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         navigate('/login');
         return;
       }
-      const response = await axios.patch<Event>(`${API_BASE_URL}/events/${eventId}`, eventData, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await axios.patch<Event>(
+        `${API_BASE_URL}/events/${eventId}`, 
+        eventData, 
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         }
-      });
+      );
       setEvents(events.map(event => event._id === eventId ? response.data : event));
+      setIsFormOpen(false);
     } catch (error) {
       console.error('Error updating event:', error);
       setError('Failed to update event. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -171,7 +188,6 @@ const Events: React.FC<EventsProps> = () => {
     } else {
       handleAddEvent(eventData);
     }
-    setIsFormOpen(false);
   };
 
   const handleFormCancel = () => {
@@ -207,12 +223,15 @@ const Events: React.FC<EventsProps> = () => {
       </div>
 
       {isFormOpen && (
-        <div className="mb-8">
-          <EventForm
-            event={editingEvent || undefined}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-transparent rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <EventForm
+              event={editingEvent || undefined}
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormCancel}
+              isSubmitting={isSubmitting}
+            />
+          </div>
         </div>
       )}
 
